@@ -377,7 +377,6 @@ Additional Services:
 * Analytics
 * Logging & Monitoring
 * CDN for Static Assets
-
 The architecture follows a modular, layered design to ensure clean code separation, maintainability, scalability, and ease of future integration with third-party enterprise systems.
 
 # 14. Expected Outcome
