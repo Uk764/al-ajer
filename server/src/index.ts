@@ -5,6 +5,9 @@ import { connectDB } from './config/db';
 import categoryRoutes from './routes/categoryRoutes';
 import brandRoutes from './routes/brandRoutes';
 import productRoutes from './routes/productRoutes';
+import branchRoutes from './routes/branchRoutes';
+import inventoryRoutes from './routes/inventoryRoutes';
+import authRoutes from './routes/authRoutes';
 
 // Load variables from our .env file into process.env
 dotenv.config();
@@ -26,6 +29,12 @@ app.use('/api/categories', categoryRoutes);
 app.use('/api/brands', brandRoutes);
 
 app.use('/api/products', productRoutes);
+
+app.use('/api/branches', branchRoutes);
+
+app.use('/api/inventory', inventoryRoutes);
+
+app.use('/api/auth', authRoutes);
 
 // A simple "health check" route — visiting this confirms the server is alive
 app.get('/api/health', (req, res) => {

@@ -64,6 +64,6 @@ productSchema.index({ name: 'text', description: 'text' }); // enables text sear
 productSchema.index({ category: 1 });
 productSchema.index({ brand: 1 });
 productSchema.index({ sellingPrice: 1 });
-productSchema.index({ sku: 1 });
+
 
 export default mongoose.model<IProduct>('Product', productSchema);
