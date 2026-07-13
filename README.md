@@ -10,8 +10,6 @@ The objective of this project is to build a modern, enterprise-grade B2B/B2C eCo
 
 The system will be designed with scalability, maintainability, security, and performance as its core principles, ensuring it can support future expansion to additional branches, countries, warehouses, and sales channels.
 
----
-
 # 2. Business Goals
 
 * Digitize Al Ajer's retail operations.
@@ -23,8 +21,6 @@ The system will be designed with scalability, maintainability, security, and per
 * Automate order processing and fulfillment.
 * Build a platform capable of supporting over 100,000 products in the future.
 * Enable future ERP and CRM integrations.
-
----
 
 # 3. Target Audience
 
@@ -44,8 +40,6 @@ The system will be designed with scalability, maintainability, security, and per
 * Maintenance Companies
 * Mechanical Contractors
 * Electrical Contractors
-
----
 
 # 4. Website Modules
 
@@ -100,8 +94,6 @@ Each product will include:
 * Customer Reviews
 * Ratings
 
----
-
 ### Shopping Cart
 
 * Add to Cart
@@ -112,8 +104,6 @@ Each product will include:
 * Shipping Estimation
 * Tax Calculation
 * Cart Summary
-
----
 
 ### Checkout
 
@@ -127,8 +117,6 @@ Each product will include:
 * Invoice Generation
 * Email Notifications
 
----
-
 ### Customer Dashboard
 
 * Profile Management
@@ -140,8 +128,6 @@ Each product will include:
 * Returns
 * Password Change
 * Notifications
-
----
 
 # 5. Admin Portal
 
@@ -158,8 +144,6 @@ Each product will include:
 * Visitor Analytics
 * Monthly Reports
 
----
-
 ## Product Management
 
 * Create Products
@@ -175,8 +159,6 @@ Each product will include:
 * SEO Details
 * Tags
 
----
-
 ## Category Management
 
 * Unlimited Categories
@@ -185,16 +167,12 @@ Each product will include:
 * Images
 * SEO URLs
 
----
-
 ## Brand Management
 
 * Brand Logo
 * Brand Banner
 * Brand Description
 * Featured Brands
-
----
 
 ## Inventory Management
 
@@ -205,8 +183,6 @@ Each product will include:
 * Low Stock Alerts
 * Stock Adjustment
 * Inventory Logs
-
----
 
 ## Order Management
 
@@ -219,8 +195,6 @@ Each product will include:
 * Returned Orders
 * Refund Management
 
----
-
 ## Customer Management
 
 * Customer Profiles
@@ -228,8 +202,6 @@ Each product will include:
 * Purchase History
 * Loyalty Points
 * Activity Logs
-
----
 
 ## Marketing Module
 
@@ -241,8 +213,6 @@ Each product will include:
 * Email Marketing
 * Push Notifications
 
----
-
 ## Reports
 
 * Sales Reports
@@ -252,8 +222,6 @@ Each product will include:
 * Branch Reports
 * Product Reports
 * Revenue Reports
-
----
 
 # 6. Technology Stack
 
@@ -278,8 +246,6 @@ Each product will include:
 * JWT Authentication
 * RESTful APIs
 * Role-Based Access Control (RBAC)
-
----
 
 ## Database
 
@@ -306,8 +272,6 @@ Collections:
 * Notifications
 * Activity Logs
 
----
-
 # 7. Performance Optimization
 
 * MongoDB Indexing
@@ -322,8 +286,6 @@ Collections:
 * Optimized Database Queries
 * Background Jobs
 * Queue Processing
-
----
 
 # 8. Security Features
 
@@ -341,8 +303,6 @@ Collections:
 * Secure Cookies
 * Audit Logs
 
----
-
 # 9. Payment Integration
 
 The platform should support multiple payment methods, including:
@@ -353,8 +313,6 @@ The platform should support multiple payment methods, including:
 * Bank Transfer
 * Cash on Delivery (if applicable)
 * UAE Payment Gateways
-
----
 
 # 10. Search & Filtering
 
@@ -376,8 +334,6 @@ Advanced search capabilities include:
 * Color
 * Material
 
----
-
 # 11. SEO Features
 
 * SEO-friendly URLs
@@ -389,8 +345,6 @@ Advanced search capabilities include:
 * Open Graph Tags
 * Canonical URLs
 * Breadcrumb Navigation
-
----
 
 # 12. Future Enhancements
 
@@ -410,8 +364,6 @@ Advanced search capabilities include:
 * Barcode Scanner
 * QR Code Inventory System
 
----
-
 # 13. Project Architecture
 
 Client (Next.js) ↔ REST API (Node.js/Express) ↔ MongoDB Atlas
@@ -427,8 +379,6 @@ Additional Services:
 * CDN for Static Assets
 
 The architecture follows a modular, layered design to ensure clean code separation, maintainability, scalability, and ease of future integration with third-party enterprise systems.
-
----
 
 # 14. Expected Outcome
 
