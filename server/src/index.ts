@@ -11,6 +11,8 @@ import authRoutes from './routes/authRoutes';
 import uploadRoutes from './routes/uploadRoutes';
 import { configureCloudinary } from './config/cloudinary';
 import bulkImportRoutes from './routes/bulkImportRoutes';
+import cartRoutes from './routes/cartRoutes';
+import orderRoutes from './routes/orderRoutes';
 
 // Load variables from our .env file into process.env
 dotenv.config();
@@ -44,6 +46,10 @@ app.use('/api/auth', authRoutes);
 app.use('/api/upload', uploadRoutes);
 
 app.use('/api/bulk-import', bulkImportRoutes);
+
+app.use('/api/cart', cartRoutes);
+
+app.use('/api/orders', orderRoutes);
 
 // A simple "health check" route — visiting this confirms the server is alive
 app.get('/api/health', (req, res) => {

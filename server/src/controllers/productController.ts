@@ -82,3 +82,19 @@ export const getProductById = async (req: Request, res: Response) => {
     res.status(500).json({ message: 'Failed to fetch product', error });
   }
 };
+
+export const getProductBySlug = async (req: Request, res: Response) => {
+  try {
+    const product = await Product.findOne({ slug: req.params.slug })
+      .populate('category', 'name slug')
+      .populate('brand', 'name slug');
+
+    if (!product) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+
+    res.status(200).json(product);
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to fetch product', error });
+  }
+};
