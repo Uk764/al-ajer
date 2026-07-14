@@ -1,0 +1,6 @@
+name,slug,sku,barcode,category,brand,costPrice,sellingPrice,unit,description
+Bosch Cordless Screwdriver,bosch-cordless-screwdriver,AJ-SCREW-0001,4059952511111,Power Tools,Bosch,60,89,piece,Compact cordless screwdriver
+Bosch Rotary Hammer 800W,bosch-rotary-hammer-800w,AJ-HAMMER-0001,4059952511222,Power Tools,Bosch,220,299,piece,Heavy duty rotary hammer
+Makita Circular Saw,makita-circular-saw,AJ-SAW-0001,0088381315999,Power Tools,Bosch,150,210,piece,190mm circular saw
+Broken Product Missing Category,broken-product,AJ-BROKEN-0001,1234567890,NonExistentCategory,Bosch,50,80,piece,This should fail
+Incomplete Product,,AJ-INCOMPLETE-0001,1234567891,Power Tools,Bosch,,120,piece,Missing cost price

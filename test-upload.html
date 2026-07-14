@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head><title>Test Upload</title></head>
+<body>
+  <h2>Test Image Upload</h2>
+  <input type="file" id="fileInput" accept="image/*" />
+  <br /><br />
+  <button onclick="uploadFile()">Upload</button>
+  <pre id="result"></pre>
+
+  <script>
+    async function uploadFile() {
+      const fileInput = document.getElementById('fileInput');
+      const resultEl = document.getElementById('result');
+
+      if (!fileInput.files[0]) {
+        resultEl.textContent = 'Please select a file first.';
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('image', fileInput.files[0]);
+
+      resultEl.textContent = 'Uploading...';
+
+      try {
+        const response = await fetch('http://localhost:5000/api/upload', {
+          method: 'POST',
+          headers: {
+            'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjZhNTViNzZiOTM3OWE1YzI0MTQ1OTFmZCIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc4NDAwODAwOSwiZXhwIjoxNzg0NjEyODA5fQ.-CdK5jLUHe_ERNnOQD0M1ZJwYGeEmxUsAnU4FRIQehQ'
+          },
+          body: formData
+        });
+        const data = await response.json();
+        resultEl.textContent = JSON.stringify(data, null, 2);
+      } catch (error) {
+        resultEl.textContent = 'Error: ' + error;
+      }
+    }
+  </script>
+</body>
+</html>

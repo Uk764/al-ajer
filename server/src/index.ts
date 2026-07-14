@@ -8,12 +8,17 @@ import productRoutes from './routes/productRoutes';
 import branchRoutes from './routes/branchRoutes';
 import inventoryRoutes from './routes/inventoryRoutes';
 import authRoutes from './routes/authRoutes';
+import uploadRoutes from './routes/uploadRoutes';
+import { configureCloudinary } from './config/cloudinary';
+import bulkImportRoutes from './routes/bulkImportRoutes';
 
 // Load variables from our .env file into process.env
 dotenv.config();
 
 // Connect to MongoDB Atlas before anything else starts
 connectDB();
+
+configureCloudinary();
 
 // Create the Express application — this is our whole backend "app"
 const app = express();
@@ -35,6 +40,10 @@ app.use('/api/branches', branchRoutes);
 app.use('/api/inventory', inventoryRoutes);
 
 app.use('/api/auth', authRoutes);
+
+app.use('/api/upload', uploadRoutes);
+
+app.use('/api/bulk-import', bulkImportRoutes);
 
 // A simple "health check" route — visiting this confirms the server is alive
 app.get('/api/health', (req, res) => {
