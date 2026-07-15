@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import Image from "next/image";
 import SortControl from "@/components/SortControl";
+import AddToCartButton from "@/components/AddToCartButton";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -59,9 +60,12 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
         ) : (
           <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
             {productsData.products.map((product) => (
-              <Link key={product._id} href={`/products/${product.slug}`}>
-                <Card className="hover:border-primary transition-colors cursor-pointer h-full">
-                  <CardContent className="p-4">
+              <Card
+                key={product._id}
+                className="hover:border-primary transition-colors h-full flex flex-col"
+              >
+                <Link href={`/products/${product.slug}`}>
+                  <CardContent className="p-4 pb-2">
                     <div className="aspect-square bg-muted rounded-md mb-3 flex items-center justify-center overflow-hidden">
                       {product.thumbnailUrl ? (
                         <Image
@@ -87,8 +91,11 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
                       AED {product.sellingPrice}
                     </p>
                   </CardContent>
-                </Card>
-              </Link>
+                </Link>
+                <CardContent className="pt-0 pb-4 px-4 mt-auto">
+                  <AddToCartButton productId={product._id} />
+                </CardContent>
+              </Card>
             ))}
           </div>
         )}
@@ -96,21 +103,24 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
         {/* Pagination info (simple version for now) */}
         {productsData.pagination.totalPages > 1 && (
           <div className="flex justify-center gap-2 mt-8">
-            {Array.from({ length: productsData.pagination.totalPages }, (_, i) => i + 1).map(
-              (pageNum) => (
-                <Link
-                  key={pageNum}
-                  href={`/category/${slug}?page=${pageNum}${sort ? `&sort=${sort}` : ""}`}
-                  className={`px-3 py-1.5 rounded-md text-sm border ${
-                    pageNum === (page ? parseInt(page) : 1)
-                      ? "bg-primary text-primary-foreground border-primary"
-                      : "border-border text-muted-foreground hover:border-primary"
-                  }`}
-                >
-                  {pageNum}
-                </Link>
-              )
-            )}
+            {Array.from(
+              { length: productsData.pagination.totalPages },
+              (_, i) => i + 1
+            ).map((pageNum) => (
+              <Link
+                key={pageNum}
+                href={`/category/${slug}?page=${pageNum}${
+                  sort ? `&sort=${sort}` : ""
+                }`}
+                className={`px-3 py-1.5 rounded-md text-sm border ${
+                  pageNum === (page ? parseInt(page) : 1)
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "border-border text-muted-foreground hover:border-primary"
+                }`}
+              >
+                {pageNum}
+              </Link>
+            ))}
           </div>
         )}
       </div>

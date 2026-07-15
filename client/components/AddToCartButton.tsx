@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
+import { useCart } from "@/context/CartContext";
 
 export default function AddToCartButton({
   productId,
@@ -13,6 +14,7 @@ export default function AddToCartButton({
   disabled?: boolean;
 }) {
   const { token, user } = useAuth();
+  const { refreshCart } = useCart();
   const router = useRouter();
   const [isAdding, setIsAdding] = useState(false);
   const [added, setAdded] = useState(false);
@@ -37,6 +39,7 @@ export default function AddToCartButton({
       if (!res.ok) throw new Error("Failed to add to cart");
 
       setAdded(true);
+      refreshCart();
       setTimeout(() => setAdded(false), 2000);
     } catch (error) {
       console.error(error);

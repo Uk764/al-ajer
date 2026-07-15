@@ -1,123 +1,100 @@
-import { getProductBySlug, getInventoryByProduct } from "@/lib/api";
+import { getProducts, getCategories } from "@/lib/api";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
+import Link from "next/link";
 import Image from "next/image";
-import { notFound } from "next/navigation";
 import AddToCartButton from "@/components/AddToCartButton";
 
-interface PageProps {
-  params: Promise<{ slug: string }>;
-}
-
-export default async function ProductDetailPage({ params }: PageProps) {
-  const { slug } = await params;
-  const product = await getProductBySlug(slug);
-
-  if (!product) {
-    notFound();
-  }
-
-  const inventory = await getInventoryByProduct(product._id);
-  const totalStock = inventory.reduce((sum, record) => sum + record.quantity, 0);
+export default async function Home() {
+  const [productsData, categories] = await Promise.all([
+    getProducts({ limit: 8 }),
+    getCategories(),
+  ]);
 
   return (
     <main className="min-h-screen bg-background text-foreground">
-      <div className="mx-auto max-w-7xl px-4 py-8 grid gap-8 md:grid-cols-2">
-        {/* Image */}
-        <div className="aspect-square bg-muted rounded-lg overflow-hidden flex items-center justify-center">
-          {product.thumbnailUrl ? (
-            <Image
-              src={product.thumbnailUrl}
-              alt={product.name}
-              width={500}
-              height={500}
-              className="object-cover w-full h-full"
-            />
-          ) : (
-            <span className="text-muted-foreground">No image available</span>
-          )}
+      {/* Hero Section */}
+      <section className="border-b border-border bg-card">
+        <div className="mx-auto max-w-7xl px-4 py-20 text-center">
+          <h1 className="text-5xl font-bold text-primary tracking-wide">
+            AL AJER
+          </h1>
+          <p className="mt-3 text-lg text-muted-foreground">
+            Building Material Trading LLC
+          </p>
+          <p className="mt-2 text-sm text-muted-foreground max-w-xl mx-auto">
+            Premium hardware, power tools, and building materials — trusted
+            across 3 stores in the UAE.
+          </p>
+          <Button size="lg" className="mt-6">
+            Shop Now
+          </Button>
         </div>
+      </section>
 
-        {/* Details */}
-        <div>
-          <Badge variant="secondary" className="mb-2">
-            {product.brand.name}
-          </Badge>
-          <h1 className="text-3xl font-bold">{product.name}</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            SKU: {product.sku} &nbsp;|&nbsp; {product.category.name}
-          </p>
-
-          <p className="text-3xl font-bold text-primary mt-4">
-            AED {product.sellingPrice}
-            <span className="text-sm text-muted-foreground font-normal ml-2">
-              / {product.unit}
-            </span>
-          </p>
-
-          <p className="mt-2 text-sm">
-            {totalStock > 0 ? (
-              <span className="text-green-500">
-                In Stock ({totalStock} available)
-              </span>
-            ) : (
-              <span className="text-destructive">Out of Stock</span>
-            )}
-          </p>
-
-          <div className="mt-6">
-            <AddToCartButton
-              productId={product._id}
-              disabled={totalStock === 0}
-            />
-          </div>
-
-          <Separator className="my-6" />
-
-          {product.description && (
-            <>
-              <h2 className="font-semibold mb-2">Description</h2>
-              <p className="text-sm text-muted-foreground">{product.description}</p>
-              <Separator className="my-6" />
-            </>
-          )}
-
-          {product.specifications.length > 0 && (
-            <>
-              <h2 className="font-semibold mb-3">Specifications</h2>
-              <table className="w-full text-sm">
-                <tbody>
-                  {product.specifications.map((spec, i) => (
-                    <tr key={i} className="border-b border-border">
-                      <td className="py-2 text-muted-foreground">{spec.key}</td>
-                      <td className="py-2 text-right">{spec.value}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-              <Separator className="my-6" />
-            </>
-          )}
-
-          {inventory.length > 0 && (
-            <>
-              <h2 className="font-semibold mb-3">Availability by Branch</h2>
-              <ul className="text-sm space-y-1">
-                {inventory.map((record) => (
-                  <li key={record._id} className="flex justify-between">
-                    <span className="text-muted-foreground">
-                      {record.branch.name} ({record.branch.code})
-                    </span>
-                    <span className={record.quantity > 0 ? "text-green-500" : "text-destructive"}>
-                      {record.quantity > 0 ? `${record.quantity} available` : "Out of stock"}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </>
-          )}
+      {/* Featured Categories */}
+      <section className="mx-auto max-w-7xl px-4 py-12">
+        <h2 className="text-2xl font-bold mb-6">Shop by Category</h2>
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+          {categories.map((category) => (
+            <Link key={category._id} href={`/category/${category.slug}`}>
+              <Card className="hover:border-primary transition-colors cursor-pointer">
+                <CardContent className="flex items-center justify-center py-8">
+                  <span className="font-medium text-center">
+                    {category.name}
+                  </span>
+                </CardContent>
+              </Card>
+            </Link>
+          ))}
         </div>
-      </div>
+      </section>
+
+      {/* Featured Products */}
+      <section className="mx-auto max-w-7xl px-4 py-12">
+        <h2 className="text-2xl font-bold mb-6">Featured Products</h2>
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+          {productsData.products.map((product) => (
+            <Card
+              key={product._id}
+              className="hover:border-primary transition-colors h-full flex flex-col"
+            >
+              <Link href={`/products/${product.slug}`}>
+                <CardContent className="p-4 pb-2">
+                  <div className="aspect-square bg-muted rounded-md mb-3 flex items-center justify-center overflow-hidden">
+                    {product.thumbnailUrl ? (
+                      <Image
+                        src={product.thumbnailUrl}
+                        alt={product.name}
+                        width={200}
+                        height={200}
+                        className="object-cover w-full h-full"
+                      />
+                    ) : (
+                      <span className="text-muted-foreground text-xs">
+                        No image
+                      </span>
+                    )}
+                  </div>
+                  <Badge variant="secondary" className="mb-2 text-xs">
+                    {product.brand.name}
+                  </Badge>
+                  <h3 className="font-medium text-sm line-clamp-2">
+                    {product.name}
+                  </h3>
+                  <p className="mt-2 font-bold text-primary">
+                    AED {product.sellingPrice}
+                  </p>
+                </CardContent>
+              </Link>
+              <CardContent className="pt-0 pb-4 px-4 mt-auto">
+                <AddToCartButton productId={product._id} />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </section>
     </main>
   );
 }

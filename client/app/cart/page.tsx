@@ -7,6 +7,7 @@ import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { useCart } from "@/context/CartContext";
 
 interface CartItem {
   product: {
@@ -23,6 +24,7 @@ export default function CartPage() {
   const { token, user, isLoading: authLoading } = useAuth();
   const [items, setItems] = useState<CartItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { refreshCart } = useCart();
 
   useEffect(() => {
     if (authLoading) return; // wait until we know if user is logged in
@@ -33,6 +35,7 @@ export default function CartPage() {
     }
 
     fetchCart();
+    refreshCart();
   }, [authLoading, user, token]);
 
   async function fetchCart() {
@@ -68,6 +71,7 @@ export default function CartPage() {
       headers: { Authorization: `Bearer ${token}` },
     });
     fetchCart();
+    refreshCart();
   }
 
   const total = items.reduce((sum, item) => sum + item.product.sellingPrice * item.quantity, 0);
@@ -110,7 +114,7 @@ export default function CartPage() {
               {items.map((item) => (
                 <Card key={item.product._id}>
                   <CardContent className="p-4 flex gap-4 items-center">
-                    <div className="w-20 h-20 bg-muted rounded-md overflow-hidden flex-shrink-0 flex items-center justify-center">
+                    <div className="w-20 h-20 bg-muted rounded-md overflow-hidden shrink-0 flex items-center justify-center">
                       {item.product.thumbnailUrl ? (
                         <Image
                           src={item.product.thumbnailUrl}
