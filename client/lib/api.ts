@@ -90,3 +90,55 @@ export async function getInventoryByProduct(productId: string): Promise<Inventor
 
   return res.json();
 }
+
+export async function createProduct(token: string, data: Record<string, unknown>) {
+  const res = await fetch(`${API_BASE_URL}/products`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.message || "Failed to create product");
+  }
+  return res.json();
+}
+
+export async function updateProduct(token: string, id: string, data: Record<string, unknown>) {
+  const res = await fetch(`${API_BASE_URL}/products/${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.message || "Failed to update product");
+  }
+  return res.json();
+}
+
+export async function deleteProduct(token: string, id: string) {
+  const res = await fetch(`${API_BASE_URL}/products/${id}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.message || "Failed to delete product");
+  }
+  return res.json();
+}
+
+export async function getProductByIdAdmin(token: string, id: string): Promise<Product> {
+  const res = await fetch(`${API_BASE_URL}/products/${id}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error("Failed to fetch product");
+  return res.json();
+}
