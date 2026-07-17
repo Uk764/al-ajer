@@ -39,43 +39,50 @@ export default async function Home() {
   return (
     <main className="min-h-screen bg-background text-foreground">
       {/* Hero */}
-      <section className="border-b border-border">
-        <div className="mx-auto max-w-7xl px-4 py-16 grid gap-10 md:grid-cols-2 items-center">
-          <div>
-            <p className="text-xs tracking-[0.3em] text-primary uppercase mb-4">
-              Premium Quality
-            </p>
-            <h1 className="text-4xl md:text-5xl font-bold leading-tight">
-              Building Materials &amp; Industrial Solutions
-            </h1>
-            <p className="mt-4 text-muted-foreground max-w-md">
-              Your trusted partner for fasteners, power tools, hardware and
-              construction materials in the UAE.
-            </p>
-            <div className="mt-8 flex items-center gap-3">
-              <Link href="/shop">
-                <Button size="lg">Explore Products →</Button>
-              </Link>
-              <Link href="/contact">
-                <Button size="lg" variant="outline">
-                  <Phone className="h-4 w-4 mr-2" />
-                  Contact Sales
-                </Button>
-              </Link>
-            </div>
-          </div>
+      <section
+  className="relative overflow-hidden border-b border-border"
+  style={{
+    backgroundImage:
+      "url('https://res.cloudinary.com/ypd6ye8m/image/upload/v1784295164/al-ajer/products/tw762ewjs9biyxogdqlr.png')",
+    backgroundSize: "cover",
+    backgroundPosition: "center right",
+  }}
+>
+  {/* Dark overlay for text readability */}
+  <div className="absolute inset-0 bg-gradient-to-r from-black via-black/85 to-black/30"></div>
 
-          {/* Hero image placeholder — replace with a real product photo via Cloudinary once available */}
-          <div className="aspect-4/3 rounded-xl bg-card border border-border flex items-center justify-center">
-            <div className="text-center px-6">
-              <Wrench className="h-10 w-10 text-primary mx-auto mb-3" />
-              <p className="text-sm text-muted-foreground">
-                Hero product photo goes here
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
+  <div className="relative mx-auto max-w-7xl px-4 py-24 md:py-32">
+    <div className="max-w-xl">
+      <p className="text-xs tracking-[0.3em] text-primary uppercase mb-4">
+        Premium Quality
+      </p>
+
+      <h1 className="text-4xl md:text-6xl font-bold leading-tight text-white">
+        Building Materials &amp; Industrial Solutions
+      </h1>
+
+      <p className="mt-6 text-lg text-gray-300">
+        Your trusted partner for fasteners, power tools, hardware and
+        construction materials in the UAE.
+      </p>
+
+      <div className="mt-10 flex flex-wrap gap-4">
+        <Link href="/shop">
+          <Button size="lg">
+            Explore Products →
+          </Button>
+        </Link>
+
+        <Link href="/contact">
+          <Button size="lg" variant="outline">
+            <Phone className="mr-2 h-4 w-4" />
+            Contact Sales
+          </Button>
+        </Link>
+      </div>
+    </div>
+  </div>
+</section>
 
       {/* USP strip */}
       <section className="border-b border-border bg-card">
