@@ -13,6 +13,7 @@ export interface Product {
   images: string[];
   unit: string;
   specifications: { key: string; value: string }[];
+  createdAt: string;
   category: { _id: string; name: string; slug: string };
   brand: { _id: string; name: string; slug: string };
 }
@@ -30,12 +31,20 @@ export interface ProductsResponse {
 export async function getProducts(params?: {
   limit?: number;
   category?: string;
+  brand?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  search?: string;
   sort?: string;
   page?: number;
 }): Promise<ProductsResponse> {
   const query = new URLSearchParams();
   if (params?.limit) query.set("limit", params.limit.toString());
   if (params?.category) query.set("category", params.category);
+  if (params?.brand) query.set("brand", params.brand);
+  if (params?.minPrice) query.set("minPrice", params.minPrice.toString());
+  if (params?.maxPrice) query.set("maxPrice", params.maxPrice.toString());
+  if (params?.search) query.set("search", params.search);
   if (params?.sort) query.set("sort", params.sort);
   if (params?.page) query.set("page", params.page.toString());
 
@@ -50,20 +59,6 @@ export async function getProducts(params?: {
   return res.json();
 }
 
-export interface Category {
-  _id: string;
-  name: string;
-  slug: string;
-}
-
-export async function getCategories(): Promise<Category[]> {
-  const res = await fetch(`${API_BASE_URL}/categories`, { cache: "no-store" });
-  if (!res.ok) {
-    throw new Error("Failed to fetch categories");
-  }
-  return res.json();
-}
-
 export async function getProductBySlug(slug: string): Promise<Product | null> {
   const res = await fetch(`${API_BASE_URL}/products/slug/${slug}`, {
     cache: "no-store",
@@ -75,19 +70,11 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
   return res.json();
 }
 
-export interface InventoryRecord {
-  _id: string;
-  quantity: number;
-  branch: { _id: string; name: string; code: string };
-}
-
-export async function getInventoryByProduct(productId: string): Promise<InventoryRecord[]> {
-  const res = await fetch(`${API_BASE_URL}/inventory/product/${productId}`, {
-    cache: "no-store",
+export async function getProductByIdAdmin(token: string, id: string): Promise<Product> {
+  const res = await fetch(`${API_BASE_URL}/products/${id}`, {
+    headers: { Authorization: `Bearer ${token}` },
   });
-
-  if (!res.ok) throw new Error("Failed to fetch inventory");
-
+  if (!res.ok) throw new Error("Failed to fetch product");
   return res.json();
 }
 
@@ -135,10 +122,44 @@ export async function deleteProduct(token: string, id: string) {
   return res.json();
 }
 
-export async function getProductByIdAdmin(token: string, id: string): Promise<Product> {
-  const res = await fetch(`${API_BASE_URL}/products/${id}`, {
-    headers: { Authorization: `Bearer ${token}` },
+export interface Category {
+  _id: string;
+  name: string;
+  slug: string;
+}
+
+export async function getCategories(): Promise<Category[]> {
+  const res = await fetch(`${API_BASE_URL}/categories`, { cache: "no-store" });
+  if (!res.ok) {
+    throw new Error("Failed to fetch categories");
+  }
+  return res.json();
+}
+
+export interface Brand {
+  _id: string;
+  name: string;
+  slug: string;
+}
+
+export async function getBrands(): Promise<Brand[]> {
+  const res = await fetch(`${API_BASE_URL}/brands`, { cache: "no-store" });
+  if (!res.ok) throw new Error("Failed to fetch brands");
+  return res.json();
+}
+
+export interface InventoryRecord {
+  _id: string;
+  quantity: number;
+  branch: { _id: string; name: string; code: string };
+}
+
+export async function getInventoryByProduct(productId: string): Promise<InventoryRecord[]> {
+  const res = await fetch(`${API_BASE_URL}/inventory/product/${productId}`, {
+    cache: "no-store",
   });
-  if (!res.ok) throw new Error("Failed to fetch product");
+
+  if (!res.ok) throw new Error("Failed to fetch inventory");
+
   return res.json();
 }
