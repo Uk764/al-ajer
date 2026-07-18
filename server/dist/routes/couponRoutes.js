@@ -1,0 +1,12 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const couponController_1 = require("../controllers/couponController");
+const authMiddleware_1 = require("../middleware/authMiddleware");
+const router = (0, express_1.Router)();
+router.get('/', authMiddleware_1.protect, (0, authMiddleware_1.authorize)('admin', 'manager', 'staff'), couponController_1.getCoupons);
+router.get('/:id', authMiddleware_1.protect, (0, authMiddleware_1.authorize)('admin', 'manager', 'staff'), couponController_1.getCouponById);
+router.post('/', authMiddleware_1.protect, (0, authMiddleware_1.authorize)('admin', 'manager'), couponController_1.createCoupon);
+router.put('/:id', authMiddleware_1.protect, (0, authMiddleware_1.authorize)('admin', 'manager'), couponController_1.updateCoupon);
+router.delete('/:id', authMiddleware_1.protect, (0, authMiddleware_1.authorize)('admin', 'manager'), couponController_1.deleteCoupon);
+exports.default = router;

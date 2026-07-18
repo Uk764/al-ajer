@@ -38,7 +38,12 @@ export default function LoginPage() {
       }
 
       login(data.user, data.token);
-      router.push("/");
+      const ADMIN_ROLES = ["admin", "manager", "staff"];
+      if (ADMIN_ROLES.includes(data.user.role)) {
+        router.push("/admin");
+      } else {
+        router.push("/");
+      }
     } catch {
       setError("Something went wrong. Please try again.");
     } finally {

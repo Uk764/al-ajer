@@ -1,11 +1,19 @@
 import { Router } from 'express';
-import { createBranch, getBranches } from '../controllers/branchController';
+import {
+  createBranch,
+  getBranches,
+  getBranchById,
+  updateBranch,
+  deleteBranch,
+} from '../controllers/branchController';
 import { protect, authorize } from '../middleware/authMiddleware';
 
 const router = Router();
 
-router.post('/', createBranch);
 router.get('/', getBranches);
-router.post('/', protect, authorize('admin'), createBranch);
+router.get('/:id', getBranchById);
+router.post('/', protect, authorize('admin', 'manager'), createBranch);
+router.put('/:id', protect, authorize('admin', 'manager'), updateBranch);
+router.delete('/:id', protect, authorize('admin'), deleteBranch);
 
 export default router;

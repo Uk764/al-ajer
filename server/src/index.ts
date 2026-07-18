@@ -13,6 +13,9 @@ import { configureCloudinary } from './config/cloudinary';
 import bulkImportRoutes from './routes/bulkImportRoutes';
 import cartRoutes from './routes/cartRoutes';
 import orderRoutes from './routes/orderRoutes';
+import couponRoutes from './routes/couponRoutes';
+import bannerRoutes from './routes/bannerRoutes';
+import reportRoutes from './routes/reportRoutes';
 
 // Load variables from our .env file into process.env
 dotenv.config();
@@ -32,24 +35,18 @@ app.use(cors());
 app.use(express.json());
 
 app.use('/api/categories', categoryRoutes);
-
 app.use('/api/brands', brandRoutes);
-
 app.use('/api/products', productRoutes);
-
 app.use('/api/branches', branchRoutes);
-
 app.use('/api/inventory', inventoryRoutes);
-
 app.use('/api/auth', authRoutes);
-
 app.use('/api/upload', uploadRoutes);
-
 app.use('/api/bulk-import', bulkImportRoutes);
-
 app.use('/api/cart', cartRoutes);
-
 app.use('/api/orders', orderRoutes);
+app.use('/api/coupons', couponRoutes);
+app.use('/api/banners', bannerRoutes);
+app.use('/api/reports', reportRoutes);
 
 // A simple "health check" route — visiting this confirms the server is alive
 app.get('/api/health', (req, res) => {

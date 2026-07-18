@@ -18,6 +18,9 @@ const cloudinary_1 = require("./config/cloudinary");
 const bulkImportRoutes_1 = __importDefault(require("./routes/bulkImportRoutes"));
 const cartRoutes_1 = __importDefault(require("./routes/cartRoutes"));
 const orderRoutes_1 = __importDefault(require("./routes/orderRoutes"));
+const couponRoutes_1 = __importDefault(require("./routes/couponRoutes"));
+const bannerRoutes_1 = __importDefault(require("./routes/bannerRoutes"));
+const reportRoutes_1 = __importDefault(require("./routes/reportRoutes"));
 // Load variables from our .env file into process.env
 dotenv_1.default.config();
 // Connect to MongoDB Atlas before anything else starts
@@ -39,6 +42,9 @@ app.use('/api/upload', uploadRoutes_1.default);
 app.use('/api/bulk-import', bulkImportRoutes_1.default);
 app.use('/api/cart', cartRoutes_1.default);
 app.use('/api/orders', orderRoutes_1.default);
+app.use('/api/coupons', couponRoutes_1.default);
+app.use('/api/banners', bannerRoutes_1.default);
+app.use('/api/reports', reportRoutes_1.default);
 // A simple "health check" route — visiting this confirms the server is alive
 app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', message: 'AL AJER API is running' });

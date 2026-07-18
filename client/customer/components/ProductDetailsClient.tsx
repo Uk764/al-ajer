@@ -315,7 +315,9 @@ export default function ProductDetailsClient({
                 <div className="space-y-1.5 text-xs">
                   {inventory.map((item) => (
                     <div key={item._id} className="flex justify-between items-center bg-[#161616]/60 p-2 rounded">
-                      <span className="font-semibold text-zinc-300 uppercase tracking-wider">{item.branch.name} ({item.branch.code})</span>
+                      <span className="font-semibold text-zinc-300 uppercase tracking-wider">
+                        {item.branch ? `${item.branch.name} (${item.branch.code})` : "Unknown Branch"}
+                      </span>
                       <span className={`font-black tracking-wider ${item.quantity > 0 ? "text-green-500" : "text-zinc-500"}`}>
                         {item.quantity > 0 ? `${item.quantity} units` : "Out of stock"}
                       </span>
