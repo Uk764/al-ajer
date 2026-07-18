@@ -60,11 +60,12 @@ export default function LoginPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Welcome back</CardTitle>
+            <CardTitle>Welcome Back</CardTitle>
             <p className="text-sm text-muted-foreground">
               Login to your account to continue.
             </p>
           </CardHeader>
+
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
@@ -78,6 +79,7 @@ export default function LoginPage() {
                   required
                 />
               </div>
+
               <div>
                 <Label htmlFor="password">Password</Label>
                 <Input
@@ -89,15 +91,28 @@ export default function LoginPage() {
                   required
                 />
               </div>
-              {error && <p className="text-sm text-destructive">{error}</p>}
-              <Button type="submit" className="w-full" disabled={isSubmitting}>
+
+              {error && (
+                <p className="text-sm text-destructive">
+                  {error}
+                </p>
+              )}
+
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={isSubmitting}
+              >
                 {isSubmitting ? "Logging in..." : "Login"}
               </Button>
             </form>
 
             <p className="text-sm text-muted-foreground text-center mt-6">
-              Don&apos;t have an account?{" "}
-              <Link href="/register" className="text-primary hover:underline font-medium">
+              Don't have an account?{" "}
+              <Link
+                href="/register"
+                className="text-primary hover:underline font-medium"
+              >
                 Create one
               </Link>
             </p>

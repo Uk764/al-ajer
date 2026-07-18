@@ -38,13 +38,16 @@ export default function SortControl() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline">Sort: {currentLabel}</Button>
+        <Button variant="outline" className="border-zinc-800 bg-[#0e0e0e] text-zinc-300 hover:border-gold hover:text-gold transition-all duration-200 font-bold uppercase tracking-wider text-[10px] rounded-md shadow-sm cursor-pointer px-4 h-9">
+          Sort: {currentLabel}
+        </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
+      <DropdownMenuContent align="end" className="bg-[#0e0e0e] border-zinc-800 text-zinc-300">
         {sortOptions.map((option) => (
           <DropdownMenuItem
             key={option.value}
             onClick={() => handleSortChange(option.value)}
+            className="text-xs font-medium hover:bg-gold/10 hover:text-gold focus:bg-gold/10 focus:text-gold cursor-pointer transition-colors"
           >
             {option.label}
           </DropdownMenuItem>

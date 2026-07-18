@@ -50,7 +50,16 @@ export default function AddToCartButton({
   }
 
   return (
-    <Button size="lg" disabled={disabled || isAdding} onClick={handleAddToCart}>
+    <Button
+      size="sm"
+      disabled={disabled || isAdding}
+      onClick={handleAddToCart}
+      className={`w-full font-bold uppercase tracking-wider text-xs transition-all duration-200 rounded-md cursor-pointer ${
+        added
+          ? "bg-green-600 hover:bg-green-700 text-white"
+          : "bg-gold hover:bg-gold-hover text-black active:scale-[0.98] shadow-md shadow-gold/10"
+      }`}
+    >
       {disabled ? "Out of Stock" : isAdding ? "Adding..." : added ? "Added ✓" : "Add to Cart"}
     </Button>
   );

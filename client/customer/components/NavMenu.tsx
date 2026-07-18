@@ -17,21 +17,27 @@ export default function NavMenu() {
   const pathname = usePathname();
 
   return (
-    <div className="hidden md:block border-b border-border bg-card">
-      <div className="mx-auto max-w-7xl px-4 flex items-center gap-2">
+    <div className="hidden md:block border-b border-zinc-900 bg-[#0c0c0c]">
+      <div className="mx-auto max-w-7xl px-4 flex items-center gap-1">
         {menuItems.map((item) => {
           const isActive = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
           return (
             <Link
               key={item.href}
               href={item.href}
-              className={`px-5 py-3.5 text-xs tracking-wider uppercase font-medium transition-colors ${
+              className={`relative px-5 py-4 text-[11px] tracking-widest uppercase font-semibold transition-all duration-300 overflow-hidden flex items-center ${
                 isActive
-                  ? "text-primary bg-primary/10"
-                  : "text-muted-foreground hover:text-primary"
+                  ? "text-gold bg-zinc-900/40"
+                  : "text-zinc-400 hover:text-gold"
               }`}
             >
-              {item.label}
+              <span>{item.label}</span>
+              {/* Gold animated line indicator */}
+              <span
+                className={`absolute bottom-0 left-0 h-[2px] bg-gold transition-all duration-300 ${
+                  isActive ? "w-full scale-x-100" : "w-full scale-x-0 group-hover:scale-x-100 hover:scale-x-100"
+                } origin-left`}
+              />
             </Link>
           );
         })}
