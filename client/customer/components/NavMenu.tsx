@@ -18,7 +18,7 @@ export default function NavMenu() {
 
   return (
     <div className="hidden md:block border-b border-zinc-900 bg-[#0c0c0c]">
-      <div className="mx-auto max-w-7xl px-4 flex items-center gap-1">
+      <div className="mx-auto max-w-7xl px-4 flex items-center justify-center gap-1">
         {menuItems.map((item) => {
           const isActive = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
           return (

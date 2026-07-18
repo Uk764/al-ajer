@@ -1,0 +1,10 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const branchController_1 = require("../controllers/branchController");
+const authMiddleware_1 = require("../middleware/authMiddleware");
+const router = (0, express_1.Router)();
+router.post('/', branchController_1.createBranch);
+router.get('/', branchController_1.getBranches);
+router.post('/', authMiddleware_1.protect, (0, authMiddleware_1.authorize)('admin'), branchController_1.createBranch);
+exports.default = router;

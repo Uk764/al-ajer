@@ -1,6 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import { Suspense } from "react";
 import Navbar from "@/customer/components/Navbar";
 import Footer from "@/customer/components/Footer";
 
@@ -17,7 +18,11 @@ export default function CustomerLayout({
 
   return (
     <>
-      {!hideLayout && <Navbar />}
+      {!hideLayout && (
+        <Suspense fallback={<div className="h-32 bg-[#0a0a0a]" />}>
+          <Navbar />
+        </Suspense>
+      )}
 
       {children}
 

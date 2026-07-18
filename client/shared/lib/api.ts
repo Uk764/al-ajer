@@ -37,6 +37,8 @@ export async function getProducts(params?: {
   search?: string;
   sort?: string;
   page?: number;
+  inStock?: boolean;
+  onSale?: boolean;
 }): Promise<ProductsResponse> {
   const query = new URLSearchParams();
   if (params?.limit) query.set("limit", params.limit.toString());
@@ -47,6 +49,8 @@ export async function getProducts(params?: {
   if (params?.search) query.set("search", params.search);
   if (params?.sort) query.set("sort", params.sort);
   if (params?.page) query.set("page", params.page.toString());
+  if (params?.inStock) query.set("inStock", "true");
+  if (params?.onSale) query.set("onSale", "true");
 
   const res = await fetch(`${API_BASE_URL}/products?${query.toString()}`, {
     cache: "no-store",
@@ -161,5 +165,21 @@ export async function getInventoryByProduct(productId: string): Promise<Inventor
 
   if (!res.ok) throw new Error("Failed to fetch inventory");
 
+  return res.json();
+}
+
+export interface Branch {
+  _id: string;
+  name: string;
+  code: string;
+  address: string;
+  city: string;
+  phone: string;
+  isActive: boolean;
+}
+
+export async function getBranches(): Promise<Branch[]> {
+  const res = await fetch(`${API_BASE_URL}/branches`, { cache: "no-store" });
+  if (!res.ok) throw new Error("Failed to fetch branches");
   return res.json();
 }

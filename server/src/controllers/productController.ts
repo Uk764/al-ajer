@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import Product from '../models/Product';
+import Inventory from '../models/Inventory';
 
 export const createProduct = async (req: Request, res: Response) => {
   try {
@@ -33,6 +34,13 @@ export const getProducts = async (req: Request, res: Response) => {
     }
     if (req.query.search) {
       filter.$text = { $search: req.query.search as string };
+    }
+    if (req.query.onSale === 'true') {
+      filter.discountedPrice = { $ne: null, $gt: 0 };
+    }
+    if (req.query.inStock === 'true') {
+      const inStockProductIds = await Inventory.find({ quantity: { $gt: 0 } }).distinct('product');
+      filter._id = { $in: inStockProductIds };
     }
 
     // Build sort object
