@@ -17,7 +17,7 @@ export interface Product {
   isActive?: boolean;
   createdAt: string;
   category: { _id: string; name: string; slug: string };
-  brand: { _id: string; name: string; slug: string };
+  brand: { _id: string; name: string; slug: string; logoUrl?: string | null };
 }
 
 export interface ProductsResponse {
@@ -634,6 +634,13 @@ export interface ReportSummaryResponse {
     status: string;
     createdAt: string;
   }[];
+  recentCustomers: {
+    _id: string;
+    name: string;
+    email: string;
+    phone: string | null;
+    createdAt: string;
+  }[];
   salesByCategory: { name: string; value: number }[];
   topProducts: { name: string; quantity: number; revenue: number }[];
   salesTrend: { date: string; amount: number }[];
@@ -645,5 +652,93 @@ export async function getReportSummary(token: string): Promise<ReportSummaryResp
     cache: "no-store",
   });
   if (!res.ok) throw new Error("Failed to fetch report summary");
+  return res.json();
+}
+
+// Inquiry Types & API
+export interface Inquiry {
+  _id: string;
+  name: string;
+  email: string;
+  phone: string;
+  subject: string | null;
+  message: string;
+  status: "pending" | "resolved";
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface InquiriesResponse {
+  inquiries: Inquiry[];
+  pagination: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
+}
+
+export async function submitInquiry(data: Record<string, unknown>): Promise<Inquiry> {
+  const res = await fetch(`${API_BASE_URL}/inquiries`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.message || "Failed to submit inquiry");
+  }
+  return res.json();
+}
+
+export async function getInquiries(
+  token: string,
+  params?: { page?: number; limit?: number; search?: string; status?: string }
+): Promise<InquiriesResponse> {
+  const query = new URLSearchParams();
+  if (params?.page) query.set("page", params.page.toString());
+  if (params?.limit) query.set("limit", params.limit.toString());
+  if (params?.search) query.set("search", params.search);
+  if (params?.status) query.set("status", params.status);
+
+  const res = await fetch(`${API_BASE_URL}/inquiries?${query.toString()}`, {
+    headers: { Authorization: `Bearer ${token}` },
+    cache: "no-store",
+  });
+  if (!res.ok) throw new Error("Failed to fetch inquiries");
+  return res.json();
+}
+
+export async function updateInquiryStatus(
+  token: string,
+  id: string,
+  status: string
+): Promise<Inquiry> {
+  const res = await fetch(`${API_BASE_URL}/inquiries/${id}/status`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ status }),
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.message || "Failed to update inquiry status");
+  }
+  return res.json();
+}
+
+export async function deleteInquiry(token: string, id: string): Promise<{ message: string }> {
+  const res = await fetch(`${API_BASE_URL}/inquiries/${id}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.message || "Failed to delete inquiry");
+  }
   return res.json();
 }

@@ -1,10 +1,11 @@
-import { getProducts, getCategories } from "@/shared/lib/api";
+import { getProducts, getCategories, getBanners, getBrands } from "@/shared/lib/api";
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent } from "@/shared/components/ui/card";
 import Link from "next/link";
 import Image from "next/image";
 import ProductCard from "@/customer/components/ProductCard";
 import NewsletterForm from "@/customer/components/NewsletterForm";
+import HeroSlider from "@/customer/components/HeroSlider";
 import {
   ShieldCheck,
   Wrench,
@@ -47,9 +48,11 @@ const referenceCategories = [
 ];
 
 export default async function Home() {
-  const [productsData, categories] = await Promise.all([
+  const [productsData, categories, banners, brands] = await Promise.all([
     getProducts({ limit: 10 }),
     getCategories(),
+    getBanners().catch(() => []),
+    getBrands().catch(() => []),
   ]);
 
   // Map database categories to reference categories for correct links
@@ -57,54 +60,8 @@ export default async function Home() {
 
   return (
     <main className="min-h-screen bg-[#070707] text-[#f5f5f5] overflow-x-hidden font-sans">
-      {/* 1. Hero Section */}
-      <section className="relative min-h-[75vh] md:min-h-[85vh] flex items-center bg-[#070707] border-b border-zinc-900/60 overflow-hidden">
-        {/* Background Image & Dark Overlay */}
-        <div className="absolute inset-0 z-0">
-          <Image
-            src="https://res.cloudinary.com/ypd6ye8m/image/upload/v1784295164/al-ajer/products/tw762ewjs9biyxogdqlr.png"
-            alt="Al Ajer Warehouse Background"
-            fill
-            priority
-            className="object-cover object-right opacity-30 brightness-[0.4]"
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-black via-black/85 to-transparent"></div>
-          <div className="absolute inset-0 bg-gradient-to-t from-[#070707] via-transparent to-[#070707]/30"></div>
-        </div>
-
-        <div className="relative z-10 mx-auto max-w-7xl px-4 py-20 md:py-32 w-full">
-          <div className="max-w-2xl">
-            <span className="text-[10px] tracking-[0.25em] font-extrabold text-gold uppercase mb-4 block">
-              PREMIUM QUALITY
-            </span>
-
-            <h1 className="text-4xl md:text-6xl font-black leading-[1.1] text-white tracking-wide uppercase">
-              BUILDING MATERIALS & <br />
-              <span className="text-gold">INDUSTRIAL SOLUTIONS</span>
-            </h1>
-
-            <p className="mt-6 text-sm md:text-base text-zinc-400 leading-relaxed max-w-lg">
-              Your trusted partner for Fasteners, Power Tools, Hardware &amp; Construction Materials in UAE.
-            </p>
-
-            <div className="mt-10 flex flex-wrap gap-4 items-center">
-              <Link href="/shop">
-                <Button className="bg-gold hover:bg-gold-hover text-black font-extrabold uppercase tracking-widest text-[10px] px-8 py-5 h-12 rounded shadow-lg shadow-gold/15 active:scale-95 transition-all duration-200 cursor-pointer">
-                  SHOP NOW
-                  <ArrowRight className="ml-2 h-4 w-4 text-black stroke-[3]" />
-                </Button>
-              </Link>
-
-              <a href="tel:+971558830854">
-                <Button variant="outline" className="border-2 border-zinc-800 hover:border-gold hover:bg-transparent text-white font-extrabold uppercase tracking-widest text-[10px] px-8 py-5 h-12 rounded transition-all duration-300 cursor-pointer gap-2">
-                  <Phone className="h-4 w-4 text-gold" />
-                  CONTACT SALES
-                </Button>
-              </a>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* 1. Hero Section Slider */}
+      <HeroSlider banners={banners} />
 
       {/* 2. Top USP Strip */}
       <section className="relative z-20 -mt-10 mx-auto max-w-7xl px-4">
@@ -196,22 +153,37 @@ export default async function Home() {
             TOP BRANDS
           </p>
           <div className="flex flex-wrap items-center justify-center gap-10 md:gap-16">
-            {[
-              { name: "Hilti", style: "font-mono tracking-tighter" },
-              { name: "DeWalt", style: "font-sans font-extrabold italic" },
-              { name: "Bosch", style: "font-sans font-bold" },
-              { name: "Makita", style: "font-serif tracking-widest font-black" },
-              { name: "Milwaukee", style: "font-sans font-extrabold italic text-red-600" },
-              { name: "Stanley", style: "font-sans font-black tracking-wide" },
-              { name: "Ingco", style: "font-sans font-extrabold uppercase italic text-yellow-500" },
-            ].map((brand) => (
-              <span
-                key={brand.name}
-                className={`text-2xl text-zinc-600 hover:text-gold transition-colors duration-300 ${brand.style} select-none cursor-pointer`}
-              >
-                {brand.name}
-              </span>
-            ))}
+            {brands.filter(b => b.isActive !== false).map((brand) => {
+              const brandLower = brand.name.toLowerCase();
+              let textStyle = "font-sans font-bold";
+              if (brandLower.includes("hilti")) textStyle = "font-mono tracking-tighter font-black";
+              else if (brandLower.includes("dewalt")) textStyle = "font-sans font-extrabold italic text-yellow-500";
+              else if (brandLower.includes("bosch")) textStyle = "font-sans font-bold";
+              else if (brandLower.includes("makita")) textStyle = "font-serif tracking-widest font-black text-teal-400";
+              else if (brandLower.includes("milwaukee")) textStyle = "font-sans font-extrabold italic text-red-600";
+              else if (brandLower.includes("stanley")) textStyle = "font-sans font-black tracking-wide";
+              else if (brandLower.includes("ingco")) textStyle = "font-sans font-extrabold uppercase italic text-amber-500";
+
+              return (
+                <Link key={brand._id} href={`/brands/${brand.slug}`} className="flex items-center justify-center">
+                  {brand.logoUrl ? (
+                    <div className="h-10 w-28 relative flex items-center justify-center filter grayscale contrast-125 opacity-60 hover:grayscale-0 hover:opacity-100 transition-all duration-300">
+                      <img
+                        src={brand.logoUrl}
+                        alt={brand.name}
+                        className="max-h-full max-w-full object-contain"
+                      />
+                    </div>
+                  ) : (
+                    <span
+                      className={`text-2xl text-zinc-500 hover:text-gold transition-colors duration-300 ${textStyle} select-none cursor-pointer`}
+                    >
+                      {brand.name}
+                    </span>
+                  )}
+                </Link>
+              );
+            })}
           </div>
         </div>
       </section>

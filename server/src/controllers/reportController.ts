@@ -35,6 +35,12 @@ export const getReportSummary = async (req: AuthRequest, res: Response) => {
       .sort({ createdAt: -1 })
       .limit(5);
 
+    // Recent customers (last 5)
+    const recentCustomers = await User.find({ role: 'customer' })
+      .select('name email phone createdAt')
+      .sort({ createdAt: -1 })
+      .limit(5);
+
     // 3. Sales by category
     // Let's get order items and map them to their product categories.
     // For simplicity, let's aggregate all delivered order items.
@@ -118,6 +124,7 @@ export const getReportSummary = async (req: AuthRequest, res: Response) => {
         totalProducts,
       },
       recentOrders,
+      recentCustomers,
       salesByCategory,
       topProducts,
       salesTrend,

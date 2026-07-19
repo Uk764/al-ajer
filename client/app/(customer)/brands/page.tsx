@@ -111,11 +111,21 @@ export default async function BrandsPage() {
             return (
               <Link key={brand._id} href={`/brands/${brand.slug}`} className="group block">
                 <div className={`h-full bg-gradient-to-br ${design.bgClass} border border-zinc-900 ${design.borderClass} group-hover:shadow-2xl group-hover:shadow-gold/5 transition-all duration-300 rounded-lg p-6 flex flex-col justify-between items-center text-center cursor-pointer min-h-[220px]`}>
-                  {/* Brand Logo Box Placeholder */}
-                  <div className="w-full flex-1 flex flex-col justify-center items-center py-4">
-                    <span className={`text-2xl md:text-3xl select-none transition-transform duration-300 group-hover:scale-105 ${design.fontClass}`}>
-                      {brand.name}
-                    </span>
+                  {/* Brand Logo Box */}
+                  <div className="w-full flex-1 flex flex-col justify-center items-center py-4 h-24 relative">
+                    {brand.logoUrl ? (
+                      <div className="h-16 w-full relative flex items-center justify-center filter grayscale group-hover:grayscale-0 opacity-80 group-hover:opacity-100 transition-all duration-300">
+                        <img
+                          src={brand.logoUrl}
+                          alt={brand.name}
+                          className="max-h-full max-w-[80%] object-contain"
+                        />
+                      </div>
+                    ) : (
+                      <span className={`text-2xl md:text-3xl select-none transition-transform duration-300 group-hover:scale-105 ${design.fontClass}`}>
+                        {brand.name}
+                      </span>
+                    )}
                     <span className="text-[8px] font-bold text-zinc-500 tracking-[0.2em] uppercase mt-3">
                       {design.tag}
                     </span>

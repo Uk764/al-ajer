@@ -220,8 +220,18 @@ export default function ProductDetailsClient({
             {/* Header info */}
             <div>
               {/* Brand Link */}
-              <Link href={`/shop?brand=${product.brand._id}`} className="text-xs font-black uppercase text-gold hover:underline tracking-widest">
-                {product.brand.name}
+              <Link
+                href={`/shop?brand=${product.brand._id}`}
+                className="inline-flex items-center gap-2 text-xs font-black uppercase text-gold hover:underline tracking-widest bg-zinc-900/40 px-2.5 py-1 rounded border border-zinc-850"
+              >
+                {product.brand.logoUrl ? (
+                  <img
+                    src={product.brand.logoUrl}
+                    alt={product.brand.name}
+                    className="h-3.5 object-contain brightness-95"
+                  />
+                ) : null}
+                <span>{product.brand.name}</span>
               </Link>
               
               {/* Title */}

@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { Mail, Phone, MapPin, Send, MessageSquare, AlertCircle, CheckCircle, ChevronDown, ChevronUp, Clock, Globe } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
+import { submitInquiry } from "@/shared/lib/api";
 
 interface FAQItem {
   q: string;
@@ -60,16 +61,21 @@ export default function ContactPage() {
     }
 
     try {
-      // Simulate API submit delay
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      await submitInquiry({
+        name: name.trim(),
+        email: email.trim(),
+        phone: phone.trim(),
+        subject: subject.trim() || null,
+        message: message.trim(),
+      });
       setSuccess(true);
       setName("");
       setEmail("");
       setPhone("");
       setSubject("");
       setMessage("");
-    } catch (err) {
-      setError("Failed to send message. Please try again later.");
+    } catch (err: any) {
+      setError(err.message || "Failed to send message. Please try again later.");
     } finally {
       setIsSubmitting(false);
     }

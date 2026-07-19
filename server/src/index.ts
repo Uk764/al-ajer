@@ -16,6 +16,8 @@ import orderRoutes from './routes/orderRoutes';
 import couponRoutes from './routes/couponRoutes';
 import bannerRoutes from './routes/bannerRoutes';
 import reportRoutes from './routes/reportRoutes';
+import inquiryRoutes from './routes/inquiryRoutes';
+
 
 // Load variables from our .env file into process.env
 dotenv.config();
@@ -47,6 +49,7 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/coupons', couponRoutes);
 app.use('/api/banners', bannerRoutes);
 app.use('/api/reports', reportRoutes);
+app.use('/api/inquiries', inquiryRoutes);
 
 // A simple "health check" route — visiting this confirms the server is alive
 app.get('/api/health', (req, res) => {

@@ -54,7 +54,7 @@ export const getProducts = async (req: Request, res: Response) => {
     const [products, total] = await Promise.all([
       Product.find(filter)
         .populate('category', 'name slug')
-        .populate('brand', 'name slug')
+        .populate('brand', 'name slug logoUrl')
         .sort(sortOption)
         .skip(skip)
         .limit(limit),
@@ -79,7 +79,7 @@ export const getProductById = async (req: Request, res: Response) => {
   try {
     const product = await Product.findById(req.params.id)
       .populate('category', 'name slug')
-      .populate('brand', 'name slug');
+      .populate('brand', 'name slug logoUrl');
 
     if (!product) {
       return res.status(404).json({ message: 'Product not found' });
@@ -95,7 +95,7 @@ export const getProductBySlug = async (req: Request, res: Response) => {
   try {
     const product = await Product.findOne({ slug: req.params.slug })
       .populate('category', 'name slug')
-      .populate('brand', 'name slug');
+      .populate('brand', 'name slug logoUrl');
 
     if (!product) {
       return res.status(404).json({ message: 'Product not found' });
@@ -113,7 +113,7 @@ export const updateProduct = async (req: Request, res: Response) => {
       runValidators: true,
     })
       .populate('category', 'name slug')
-      .populate('brand', 'name slug');
+      .populate('brand', 'name slug logoUrl');
 
     if (!product) {
       return res.status(404).json({ message: 'Product not found' });

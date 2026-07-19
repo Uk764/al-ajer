@@ -103,9 +103,19 @@ export default async function BrandPage({ params, searchParams }: BrandPageProps
             <Sparkles className="h-3.5 w-3.5" />
             AUTHORIZED PARTNER BRAND
           </span>
-          <h1 className={`text-4xl md:text-6xl font-black uppercase tracking-wider mb-2 ${detail.titleStyle}`}>
-            {currentBrand.name}
-          </h1>
+          {currentBrand.logoUrl ? (
+            <div className="relative h-20 w-44 mx-auto mb-4 bg-zinc-900/40 p-4 rounded-lg border border-zinc-800/80 flex items-center justify-center">
+              <img
+                src={currentBrand.logoUrl}
+                alt={currentBrand.name}
+                className="max-h-full max-w-full object-contain"
+              />
+            </div>
+          ) : (
+            <h1 className={`text-4xl md:text-6xl font-black uppercase tracking-wider mb-2 ${detail.titleStyle}`}>
+              {currentBrand.name}
+            </h1>
+          )}
           <p className="text-[10px] tracking-[0.25em] font-extrabold text-zinc-500 uppercase mt-2">
             {detail.tagline}
           </p>

@@ -18,6 +18,7 @@ import {
   Image as ImageIcon,
   BarChart3,
   LogOut,
+  MessageSquare,
 } from "lucide-react";
 
 const ADMIN_ROLES = ["admin", "manager", "staff"];
@@ -34,6 +35,7 @@ const navItems = [
   { label: "Staff", href: "/admin/staff", icon: UserCog },
   { label: "Coupons", href: "/admin/coupons", icon: Ticket },
   { label: "Banners", href: "/admin/banners", icon: ImageIcon },
+  { label: "Inquiries", href: "/admin/inquiries", icon: MessageSquare },
   { label: "Reports", href: "/admin/reports", icon: BarChart3 },
 ];
 
