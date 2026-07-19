@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/shared/context/AuthContext";
@@ -10,13 +10,25 @@ import { Label } from "@/shared/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
 
 export default function LoginPage() {
+  const { login, user, isLoading } = useAuth();
+  const router = useRouter();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { login } = useAuth();
-  const router = useRouter();
+  useEffect(() => {
+    if (isLoading) return;
+    if (user) {
+      const ADMIN_ROLES = ["admin", "manager", "staff"];
+      if (ADMIN_ROLES.includes(user.role)) {
+        router.push("/admin");
+      } else {
+        router.push("/");
+      }
+    }
+  }, [user, isLoading, router]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();

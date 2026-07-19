@@ -40,6 +40,11 @@ export default function Navbar() {
   const [categoryDropdownOpen, setCategoryDropdownOpen] = useState(false);
   const [isCompareOpen, setIsCompareOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Fetch categories on mount
   useEffect(() => {
@@ -55,7 +60,7 @@ export default function Navbar() {
   }, [searchParams]);
 
   let accountHref = "/login";
-  if (user) {
+  if (mounted && user) {
     accountHref = ADMIN_ROLES.includes(user.role) ? "/admin" : "/account";
   }
 
@@ -182,7 +187,7 @@ export default function Navbar() {
                 >
                   <User className="h-5 w-5" />
                   <span className="text-[10px] font-medium tracking-wide">
-                    {user ? "Account" : "Login"}
+                    {!mounted ? "Login" : user ? "Account" : "Login"}
                   </span>
                 </Button>
               </Link>
@@ -193,7 +198,7 @@ export default function Navbar() {
                   <button className="relative flex flex-col items-center justify-center py-1.5 px-3.5 gap-1 text-zinc-400 hover:text-gold transition-all duration-200 cursor-pointer bg-transparent border-0 outline-none">
                     <Heart className="h-5 w-5" />
                     <span className="text-[10px] font-medium tracking-wide">Wishlist</span>
-                    {wishlistCount > 0 && (
+                    {mounted && wishlistCount > 0 && (
                       <span className="absolute top-1 right-3.5 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-gold text-black text-[10px] font-bold shadow-lg shadow-gold/20 animate-pulse">
                         {wishlistCount}
                       </span>
@@ -206,10 +211,10 @@ export default function Navbar() {
                 >
                   <SheetHeader className="border-b border-zinc-900 pb-4 mb-6">
                     <SheetTitle className="text-lg font-extrabold uppercase tracking-wider text-white">
-                      My <span className="text-gold">Wishlist</span> ({wishlistCount})
+                      My <span className="text-gold">Wishlist</span> ({mounted ? wishlistCount : 0})
                     </SheetTitle>
                   </SheetHeader>
-                  {wishlistItems.length === 0 ? (
+                  {!mounted || wishlistItems.length === 0 ? (
                     <div className="text-center py-20">
                       <Heart className="h-10 w-10 text-gold mx-auto mb-4 opacity-50" />
                       <p className="text-zinc-500 text-sm font-semibold uppercase tracking-wider">Your wishlist is empty.</p>
@@ -272,7 +277,7 @@ export default function Navbar() {
                   <ShoppingCart className="h-5 w-5" />
                   <span className="text-[10px] font-medium tracking-wide">Cart</span>
                 </Button>
-                {itemCount > 0 && (
+                {mounted && itemCount > 0 && (
                   <span className="absolute top-1 right-2.5 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-gold text-black text-[10px] font-bold shadow-lg shadow-gold/20 animate-pulse">
                     {itemCount > 99 ? "99+" : itemCount}
                   </span>
@@ -350,7 +355,7 @@ export default function Navbar() {
                 className="py-2 text-xs uppercase font-bold tracking-widest text-zinc-300 hover:text-gold border-t border-zinc-900 mt-2 pt-2 flex items-center gap-2"
               >
                 <User className="h-4 w-4 text-gold" />
-                {user ? "My Account" : "Login / Register"}
+                {!mounted ? "Login / Register" : user ? "My Account" : "Login / Register"}
               </Link>
             </div>
           </div>
@@ -360,7 +365,7 @@ export default function Navbar() {
       </header>
 
       {/* 4. Product Comparison Floating Bar */}
-      {compareCount > 0 && (
+      {mounted && compareCount > 0 && (
         <div className="fixed bottom-6 right-6 z-50 bg-[#0c0c0c] border-2 border-gold/40 rounded-xl py-3.5 px-5 shadow-2xl shadow-black/80 flex items-center gap-6 max-w-lg md:max-w-xl animate-bounce-short">
           <div className="flex items-center gap-3">
             <span className="h-2 w-2 rounded-full bg-gold animate-ping" />
