@@ -1,6 +1,8 @@
 import { Request, Response } from 'express';
 import Product from '../models/Product';
 import Inventory from '../models/Inventory';
+import Category from '../models/Category';
+import Brand from '../models/Brand';
 
 export const createProduct = async (req: Request, res: Response) => {
   try {
@@ -19,7 +21,10 @@ export const getProducts = async (req: Request, res: Response) => {
     const skip = (page - 1) * limit;
 
     // Build a MongoDB filter object based on which query params were sent
-    const filter: Record<string, any> = { isActive: true };
+    const filter: Record<string, any> = {};
+    if (req.query.all !== 'true') {
+      filter.isActive = true;
+    }
 
     if (req.query.category) {
       filter.category = req.query.category;
@@ -33,7 +38,23 @@ export const getProducts = async (req: Request, res: Response) => {
       if (req.query.maxPrice) filter.sellingPrice.$lte = Number(req.query.maxPrice);
     }
     if (req.query.search) {
-      filter.$text = { $search: req.query.search as string };
+      const searchStr = req.query.search as string;
+      const searchRegex = new RegExp(searchStr, 'i');
+
+      // Find matching categories and brands
+      const [matchingCategories, matchingBrands] = await Promise.all([
+        Category.find({ name: searchRegex }).distinct('_id'),
+        Brand.find({ name: searchRegex }).distinct('_id'),
+      ]);
+
+      filter.$or = [
+        { name: searchRegex },
+        { sku: searchRegex },
+        { barcode: searchRegex },
+        { description: searchRegex },
+        { category: { $in: matchingCategories } },
+        { brand: { $in: matchingBrands } }
+      ];
     }
     if (req.query.onSale === 'true') {
       filter.discountedPrice = { $ne: null, $gt: 0 };

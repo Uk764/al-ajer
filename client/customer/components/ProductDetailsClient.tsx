@@ -415,6 +415,7 @@ export default function ProductDetailsClient({
             {[
               { id: "description", label: "Description" },
               { id: "specifications", label: "Specifications" },
+              { id: "inquiry", label: "B2B Inquiry" },
               { id: "reviews", label: `Reviews (${reviewCount})` },
               { id: "shipping", label: "Shipping & Returns" },
             ].map((tab) => {
@@ -497,6 +498,20 @@ export default function ProductDetailsClient({
                     </tbody>
                   </table>
                 </div>
+              </div>
+            )}
+
+            {activeTab === "inquiry" && (
+              <div className="max-w-xl space-y-6">
+                <div>
+                  <h4 className="font-extrabold text-white uppercase tracking-wider text-[11px] mb-2">
+                    Request a B2B Quote / Product Inquiry
+                  </h4>
+                  <p className="text-zinc-400 text-xs">
+                    Fill out the form below and our sales representatives will contact you within 24 hours.
+                  </p>
+                </div>
+                <ProductInquiryForm product={product} token={token || undefined} user={user} />
               </div>
             )}
 
@@ -611,5 +626,153 @@ export default function ProductDetailsClient({
 
       </div>
     </main>
+  );
+}
+
+function ProductInquiryForm({
+  product,
+  token,
+  user,
+}: {
+  product: Product;
+  token?: string;
+  user?: any;
+}) {
+  const [formData, setFormData] = useState({
+    name: user?.name || "",
+    email: user?.email || "",
+    phone: user?.phone || "",
+    subject: `Inquiry: ${product.name} (SKU: ${product.sku})`,
+    message: `Hello, I would like to request a quote and stock details for ${product.name}. Please contact me back.`,
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
+  const [submitSuccess, setSubmitSuccess] = useState("");
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setSubmitError("");
+    setSubmitSuccess("");
+
+    try {
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      };
+      if (token) {
+        headers.Authorization = `Bearer ${token}`;
+      }
+
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/inquiries`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          ...formData,
+          product: product._id,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Failed to submit inquiry");
+
+      setSubmitSuccess("Your inquiry has been submitted successfully! Our representative will contact you soon.");
+      setFormData((prev) => ({
+        ...prev,
+        message: "",
+      }));
+    } catch (err: any) {
+      setSubmitError(err.message || "Something went wrong. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      {submitError && (
+        <div className="bg-destructive/15 text-destructive p-3 rounded-md text-xs">
+          {submitError}
+        </div>
+      )}
+      {submitSuccess && (
+        <div className="bg-green-600/15 text-green-500 p-3 rounded-md text-xs font-semibold">
+          {submitSuccess}
+        </div>
+      )}
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-1">
+          <label className="text-zinc-500 uppercase tracking-widest text-[9px] font-bold">Your Name</label>
+          <input
+            type="text"
+            name="name"
+            value={formData.name}
+            onChange={handleChange}
+            required
+            className="w-full h-10 px-3 rounded bg-[#121212] border border-zinc-800 focus:border-gold text-white text-xs placeholder:text-zinc-700 focus:outline-none"
+            placeholder="e.g. John Doe"
+          />
+        </div>
+        <div className="space-y-1">
+          <label className="text-zinc-500 uppercase tracking-widest text-[9px] font-bold">Email Address</label>
+          <input
+            type="email"
+            name="email"
+            value={formData.email}
+            onChange={handleChange}
+            required
+            className="w-full h-10 px-3 rounded bg-[#121212] border border-zinc-800 focus:border-gold text-white text-xs placeholder:text-zinc-700 focus:outline-none"
+            placeholder="e.g. john@company.com"
+          />
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-1">
+          <label className="text-zinc-500 uppercase tracking-widest text-[9px] font-bold">Phone Number</label>
+          <input
+            type="tel"
+            name="phone"
+            value={formData.phone}
+            onChange={handleChange}
+            required
+            className="w-full h-10 px-3 rounded bg-[#121212] border border-zinc-800 focus:border-gold text-white text-xs placeholder:text-zinc-700 focus:outline-none"
+            placeholder="e.g. +971 50 123 4567"
+          />
+        </div>
+        <div className="space-y-1">
+          <label className="text-zinc-500 uppercase tracking-widest text-[9px] font-bold">Subject</label>
+          <input
+            type="text"
+            name="subject"
+            value={formData.subject}
+            onChange={handleChange}
+            className="w-full h-10 px-3 rounded bg-[#121212] border border-zinc-800 focus:border-gold text-white text-xs placeholder:text-zinc-700 focus:outline-none"
+          />
+        </div>
+      </div>
+      <div className="space-y-1">
+        <label className="text-zinc-500 uppercase tracking-widest text-[9px] font-bold">Inquiry Message</label>
+        <textarea
+          name="message"
+          rows={4}
+          value={formData.message}
+          onChange={handleChange}
+          required
+          className="w-full p-3 rounded bg-[#121212] border border-zinc-800 focus:border-gold text-white text-xs placeholder:text-zinc-700 focus:outline-none leading-relaxed resize-none"
+          placeholder="Details about quantities, delivery dates, or custom requirements..."
+        />
+      </div>
+      <button
+        type="submit"
+        disabled={isSubmitting}
+        className="w-full bg-gold hover:bg-gold-hover disabled:bg-zinc-800 text-black font-extrabold uppercase tracking-widest text-[10px] h-11 rounded cursor-pointer transition-all duration-300"
+      >
+        {isSubmitting ? "Submitting Inquiry..." : "Submit Inquiry"}
+      </button>
+    </form>
   );
 }

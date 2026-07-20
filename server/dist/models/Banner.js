@@ -39,6 +39,8 @@ const bannerSchema = new mongoose_1.Schema({
     subtitle: { type: String, default: null, trim: true },
     imageUrl: { type: String, required: true },
     linkUrl: { type: String, default: null, trim: true },
+    buttonText: { type: String, default: null, trim: true },
+    buttonLink: { type: String, default: null, trim: true },
     sortOrder: { type: Number, default: 0, min: 0 },
     isActive: { type: Boolean, default: true },
 }, { timestamps: true });

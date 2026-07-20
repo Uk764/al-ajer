@@ -6,6 +6,9 @@ export interface ICategory extends Document {
   name: string;
   slug: string;
   parent: mongoose.Types.ObjectId | null;
+  imageUrl: string | null;
+  description: string;
+  icon: string;
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -28,6 +31,18 @@ const categorySchema = new Schema<ICategory>(
       type: Schema.Types.ObjectId,
       ref: 'Category',
       default: null,
+    },
+    imageUrl: {
+      type: String,
+      default: null,
+    },
+    description: {
+      type: String,
+      default: '',
+    },
+    icon: {
+      type: String,
+      default: 'Boxes',
     },
     isActive: {
       type: Boolean,

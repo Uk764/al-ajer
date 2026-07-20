@@ -1,9 +1,11 @@
 import { getCategories, getProducts } from "@/shared/lib/api";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowRight, Box, Shield, Wrench, Hammer, Droplets, Cpu, Boxes, Zap, ChevronRight } from "lucide-react";
+import * as LucideIcons from "lucide-react";
 
-// Image mapping for categories to give a highly premium visual appeal
+const { ArrowRight, Box, Boxes, ChevronRight, Zap, Wrench, Hammer, Shield, Droplets, Cpu } = LucideIcons;
+
+// Image mapping fallbacks for categories to give a highly premium visual appeal
 const categoryImages: Record<string, string> = {
   "fasteners": "https://res.cloudinary.com/ypd6ye8m/image/upload/v1784295164/al-ajer/products/tw762ewjs9biyxogdqlr.png",
   "power-tools": "https://images.unsplash.com/photo-1504148455328-c376907d081c?auto=format&fit=crop&q=80&w=600",
@@ -88,9 +90,17 @@ export default async function CategoriesPage() {
       {/* 2. Categories Grid */}
       <section className="mx-auto max-w-7xl px-4 py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {categoriesWithCounts.map((category) => {
-            const imageSrc = categoryImages[category.slug] || "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80&w=600";
-            const IconComponent = categoryIcons[category.slug] || Box;
+          {categoriesWithCounts.filter(c => c.isActive !== false).map((category) => {
+            const imageSrc = category.imageUrl || categoryImages[category.slug] || "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80&w=600";
+            
+            let IconComponent = Boxes;
+            if (category.icon) {
+              const FoundIcon = (LucideIcons as any)[category.icon];
+              if (FoundIcon) IconComponent = FoundIcon;
+            } else {
+              IconComponent = categoryIcons[category.slug] || Box;
+            }
+            
             const subcategories = subcategoryPresets[category.slug] || ["General Supplies", "Industrial Consumables", "Accessories"];
 
             return (
@@ -136,7 +146,7 @@ export default async function CategoriesPage() {
                         {subcategories.map((sub, i) => (
                           <li key={i}>
                             <Link
-                              href={`/shop?category=${category._id}`}
+                              href={`/category/${category.slug}?search=${encodeURIComponent(sub)}`}
                               className="text-[11px] font-bold uppercase tracking-wider text-zinc-400 hover:text-gold flex items-center gap-1.5 transition-colors"
                             >
                               <ChevronRight className="h-3 w-3 text-gold/60" />
@@ -151,7 +161,7 @@ export default async function CategoriesPage() {
 
                 {/* Card Footer Button */}
                 <div className="p-6 pt-0 mt-4">
-                  <Link href={`/shop?category=${category._id}`} className="block">
+                  <Link href={`/category/${category.slug}`} className="block">
                     <button className="w-full bg-[#141414] hover:bg-gold text-zinc-300 hover:text-black font-extrabold uppercase tracking-widest text-[10px] py-3.5 rounded border border-zinc-800 hover:border-gold transition-all duration-300 flex items-center justify-center gap-2 group-hover:border-gold/40 cursor-pointer">
                       View Catalog
                       <ArrowRight className="h-3.5 w-3.5 stroke-[2.5]" />

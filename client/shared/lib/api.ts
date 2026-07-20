@@ -136,6 +136,9 @@ export interface Category {
   name: string;
   slug: string;
   parent?: { _id: string; name: string; slug: string } | null;
+  imageUrl?: string | null;
+  description?: string;
+  icon?: string;
   isActive?: boolean;
 }
 
@@ -513,6 +516,8 @@ export interface Banner {
   subtitle: string | null;
   imageUrl: string;
   linkUrl: string | null;
+  buttonText?: string | null;
+  buttonLink?: string | null;
   sortOrder: number;
   isActive: boolean;
 }
@@ -664,6 +669,9 @@ export interface Inquiry {
   subject: string | null;
   message: string;
   status: "pending" | "resolved";
+  user?: { _id: string; name: string; email: string; role?: string } | null;
+  product?: { _id: string; name: string; slug: string; sku?: string; thumbnailUrl?: string | null } | null;
+  adminResponse?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -678,12 +686,16 @@ export interface InquiriesResponse {
   };
 }
 
-export async function submitInquiry(data: Record<string, unknown>): Promise<Inquiry> {
+export async function submitInquiry(data: Record<string, unknown>, token?: string): Promise<Inquiry> {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
   const res = await fetch(`${API_BASE_URL}/inquiries`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers,
     body: JSON.stringify(data),
   });
   if (!res.ok) {
@@ -711,6 +723,15 @@ export async function getInquiries(
   return res.json();
 }
 
+export async function getMyInquiries(token: string): Promise<Inquiry[]> {
+  const res = await fetch(`${API_BASE_URL}/inquiries/my-inquiries`, {
+    headers: { Authorization: `Bearer ${token}` },
+    cache: "no-store",
+  });
+  if (!res.ok) throw new Error("Failed to fetch customer inquiries");
+  return res.json();
+}
+
 export async function updateInquiryStatus(
   token: string,
   id: string,
@@ -731,6 +752,30 @@ export async function updateInquiryStatus(
   return res.json();
 }
 
+export async function updateInquiryAdmin(
+  token: string,
+  id: string,
+  data: Record<string, unknown>
+): Promise<Inquiry> {
+  const res = await fetch(`${API_BASE_URL}/inquiries/${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.message || "Failed to update inquiry");
+  }
+  return res.json();
+}
+
+export async function createInquiryAdmin(token: string, data: Record<string, unknown>): Promise<Inquiry> {
+  return submitInquiry(data, token);
+}
+
 export async function deleteInquiry(token: string, id: string): Promise<{ message: string }> {
   const res = await fetch(`${API_BASE_URL}/inquiries/${id}`, {
     method: "DELETE",
@@ -742,3 +787,4 @@ export async function deleteInquiry(token: string, id: string): Promise<{ messag
   }
   return res.json();
 }
+

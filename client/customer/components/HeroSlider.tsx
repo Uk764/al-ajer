@@ -136,13 +136,13 @@ export default function HeroSlider({ banners }: HeroSliderProps) {
                   </h1>
 
                   <div className="mt-10 flex flex-wrap gap-4 items-center animate-fade-in-delayed">
-                    <Link href={banner.linkUrl || "/shop"}>
+                    <Link href={banner.buttonLink || banner.linkUrl || "/shop"}>
                       <Button className="bg-gold hover:bg-gold-hover text-black font-extrabold uppercase tracking-widest text-[10px] px-8 py-5 h-12 rounded shadow-lg shadow-gold/15 active:scale-95 transition-all duration-200 cursor-pointer">
-                        DISCOVER MORE
+                        {banner.buttonText || "DISCOVER MORE"}
                         <ArrowRight className="ml-2 h-4 w-4 text-black stroke-[3]" />
                       </Button>
                     </Link>
-
+ 
                     <a href="tel:+971558830854">
                       <Button variant="outline" className="border-2 border-zinc-800 hover:border-gold hover:bg-transparent text-white font-extrabold uppercase tracking-widest text-[10px] px-8 py-5 h-12 rounded transition-all duration-300 cursor-pointer gap-2">
                         <Phone className="h-4 w-4 text-gold" />

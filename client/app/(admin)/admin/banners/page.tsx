@@ -31,6 +31,8 @@ export default function AdminBannersPage() {
     subtitle: "",
     imageUrl: "",
     linkUrl: "",
+    buttonText: "",
+    buttonLink: "",
     sortOrder: 0,
     isActive: true,
   });
@@ -64,6 +66,8 @@ export default function AdminBannersPage() {
       subtitle: "",
       imageUrl: "",
       linkUrl: "",
+      buttonText: "",
+      buttonLink: "",
       sortOrder: banners.length,
       isActive: true,
     });
@@ -78,6 +82,8 @@ export default function AdminBannersPage() {
       subtitle: banner.subtitle || "",
       imageUrl: banner.imageUrl || "",
       linkUrl: banner.linkUrl || "",
+      buttonText: banner.buttonText || "",
+      buttonLink: banner.buttonLink || "",
       sortOrder: banner.sortOrder,
       isActive: banner.isActive !== false,
     });
@@ -138,6 +144,8 @@ export default function AdminBannersPage() {
         subtitle: formData.subtitle || null,
         imageUrl: formData.imageUrl,
         linkUrl: formData.linkUrl || null,
+        buttonText: formData.buttonText || null,
+        buttonLink: formData.buttonLink || null,
         sortOrder: Number(formData.sortOrder),
         isActive: formData.isActive,
       };
@@ -332,6 +340,26 @@ export default function AdminBannersPage() {
                         {isUploading ? "Uploading..." : "Upload Banner Image"}
                       </Label>
                     </div>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="buttonText">Button Text (CTA)</Label>
+                    <Input
+                      id="buttonText"
+                      value={formData.buttonText}
+                      onChange={(e) => setFormData((p) => ({ ...p, buttonText: e.target.value }))}
+                      placeholder="e.g. SHOP NOW"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="buttonLink">Button Action Link</Label>
+                    <Input
+                      id="buttonLink"
+                      value={formData.buttonLink}
+                      onChange={(e) => setFormData((p) => ({ ...p, buttonLink: e.target.value }))}
+                      placeholder="e.g. /shop?category=power-tools"
+                    />
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">

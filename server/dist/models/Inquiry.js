@@ -34,40 +34,15 @@ var __importStar = (this && this.__importStar) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importStar(require("mongoose"));
-const categorySchema = new mongoose_1.Schema({
-    name: {
-        type: String,
-        required: true,
-        trim: true,
-    },
-    slug: {
-        type: String,
-        required: true,
-        unique: true,
-        lowercase: true,
-    },
-    parent: {
-        type: mongoose_1.Schema.Types.ObjectId,
-        ref: 'Category',
-        default: null,
-    },
-    imageUrl: {
-        type: String,
-        default: null,
-    },
-    description: {
-        type: String,
-        default: '',
-    },
-    icon: {
-        type: String,
-        default: 'Boxes',
-    },
-    isActive: {
-        type: Boolean,
-        default: true,
-    },
-}, {
-    timestamps: true, // automatically adds createdAt and updatedAt fields
-});
-exports.default = mongoose_1.default.model('Category', categorySchema);
+const inquirySchema = new mongoose_1.Schema({
+    name: { type: String, required: true, trim: true },
+    email: { type: String, required: true, trim: true, lowercase: true },
+    phone: { type: String, required: true, trim: true },
+    subject: { type: String, default: null, trim: true },
+    message: { type: String, required: true, trim: true },
+    status: { type: String, enum: ['pending', 'resolved'], default: 'pending' },
+    user: { type: mongoose_1.Schema.Types.ObjectId, ref: 'User', default: null },
+    product: { type: mongoose_1.Schema.Types.ObjectId, ref: 'Product', default: null },
+    adminResponse: { type: String, default: null },
+}, { timestamps: true });
+exports.default = mongoose_1.default.model('Inquiry', inquirySchema);

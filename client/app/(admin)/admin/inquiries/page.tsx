@@ -1,15 +1,19 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useAuth } from "@/shared/context/AuthContext";
 import {
   getInquiries,
   updateInquiryStatus,
+  updateInquiryAdmin,
+  createInquiryAdmin,
   deleteInquiry,
   Inquiry,
 } from "@/shared/lib/api";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
+import { Label } from "@/shared/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { Badge } from "@/shared/components/ui/badge";
 import {
@@ -23,6 +27,8 @@ import {
   Calendar,
   MessageSquare,
   Eye,
+  Plus,
+  ArrowUpRight,
 } from "lucide-react";
 
 export default function AdminInquiriesPage() {
@@ -41,10 +47,20 @@ export default function AdminInquiriesPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
 
-  // View modal state
+  // Modal states
   const [selectedInquiry, setSelectedInquiry] = useState<Inquiry | null>(null);
+  const [adminResponseInput, setAdminResponseInput] = useState("");
 
-  // Delete confirmation state
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [addFormData, setAddFormData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    subject: "",
+    message: "",
+    status: "pending" as "pending" | "resolved",
+  });
+
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [inquiryToDelete, setInquiryToDelete] = useState<Inquiry | null>(null);
 
@@ -53,6 +69,14 @@ export default function AdminInquiriesPage() {
       fetchData();
     }
   }, [token, page, statusFilter]);
+
+  useEffect(() => {
+    if (selectedInquiry) {
+      setAdminResponseInput(selectedInquiry.adminResponse || "");
+    } else {
+      setAdminResponseInput("");
+    }
+  }, [selectedInquiry]);
 
   // Handle search submit
   const handleSearchSubmit = (e: React.FormEvent) => {
@@ -91,7 +115,7 @@ export default function AdminInquiriesPage() {
     const newStatus = inquiry.status === "pending" ? "resolved" : "pending";
 
     try {
-      await updateInquiryStatus(token, inquiry._id, newStatus);
+      const updated = await updateInquiryStatus(token, inquiry._id, newStatus);
       setSuccess(`Inquiry marked as ${newStatus}.`);
       
       // Update local state
@@ -106,6 +130,55 @@ export default function AdminInquiriesPage() {
       }
     } catch (err: any) {
       setError(err.message || "Failed to update status.");
+    }
+  }
+
+  async function handleSaveReply() {
+    if (!token || !selectedInquiry) return;
+    setError("");
+    setSuccess("");
+    try {
+      const updated = await updateInquiryAdmin(token, selectedInquiry._id, {
+        adminResponse: adminResponseInput || null,
+        status: adminResponseInput ? "resolved" : selectedInquiry.status, // Auto-resolve if reply added
+      });
+      setSuccess("Inquiry reply saved successfully.");
+      
+      setInquiries((prev) =>
+        prev.map((item) => (item._id === updated._id ? updated : item))
+      );
+      setSelectedInquiry(updated);
+    } catch (err: any) {
+      setError(err.message || "Failed to save reply.");
+    }
+  }
+
+  function handleAddClick() {
+    setAddFormData({
+      name: "",
+      email: "",
+      phone: "",
+      subject: "",
+      message: "",
+      status: "pending",
+    });
+    setError("");
+    setIsAddModalOpen(true);
+  }
+
+  async function handleAddSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!token) return;
+    setError("");
+    setSuccess("");
+
+    try {
+      await createInquiryAdmin(token, addFormData);
+      setSuccess("Inquiry created successfully.");
+      setIsAddModalOpen(false);
+      fetchData();
+    } catch (err: any) {
+      setError(err.message || "Failed to create inquiry.");
     }
   }
 
@@ -129,7 +202,6 @@ export default function AdminInquiriesPage() {
         setSelectedInquiry(null);
       }
       
-      // If we are on a page with 1 item and delete it, go back a page
       if (inquiries.length === 1 && page > 1) {
         setPage((p) => p - 1);
       } else {
@@ -153,6 +225,9 @@ export default function AdminInquiriesPage() {
         <div className="flex gap-2">
           <Button variant="outline" size="icon" onClick={fetchData} disabled={isLoading}>
             <RefreshCw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
+          </Button>
+          <Button onClick={handleAddClick} className="gap-2">
+            <Plus className="h-4 w-4" /> Add Inquiry
           </Button>
         </div>
       </div>
@@ -342,7 +417,7 @@ export default function AdminInquiriesPage() {
         </CardContent>
       </Card>
 
-      {/* Inquiry Detail Modal */}
+      {/* Inquiry Detail & Reply Modal */}
       {selectedInquiry && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
           <div className="bg-card border border-border w-full max-w-lg rounded-lg shadow-lg overflow-hidden animate-in fade-in zoom-in-95 duration-150">
@@ -350,7 +425,7 @@ export default function AdminInquiriesPage() {
               <div className="flex items-center gap-2">
                 <MessageSquare className="h-5 w-5 text-primary" />
                 <h3 className="font-semibold text-lg uppercase tracking-wider text-foreground">
-                  Inquiry Details
+                  Inquiry Reply Panel
                 </h3>
               </div>
               <Button variant="ghost" size="icon" onClick={() => setSelectedInquiry(null)}>
@@ -358,7 +433,7 @@ export default function AdminInquiriesPage() {
               </Button>
             </div>
             
-            <div className="p-6 space-y-6">
+            <div className="p-6 space-y-5 overflow-y-auto max-h-[75vh]">
               {/* Contact Info Header */}
               <div className="grid grid-cols-2 gap-4 text-xs border-b border-border pb-4">
                 <div className="space-y-1">
@@ -387,6 +462,44 @@ export default function AdminInquiriesPage() {
                 </div>
               </div>
 
+              {/* Relationship lookups */}
+              {selectedInquiry.user && (
+                <div className="bg-[#141414] border border-zinc-800 rounded-md p-3 text-xs space-y-1.5">
+                  <p className="font-extrabold text-gold uppercase tracking-widest text-[9px]">Registered Customer Account</p>
+                  <div className="flex justify-between text-zinc-300">
+                    <span><strong>Name:</strong> {selectedInquiry.user.name}</span>
+                    <span className="capitalize text-zinc-500 font-bold">Role: {selectedInquiry.user.role}</span>
+                  </div>
+                  <p className="text-zinc-400 font-mono text-[10px]">Email: {selectedInquiry.user.email}</p>
+                </div>
+              )}
+
+              {selectedInquiry.product && (
+                <div className="bg-[#141414] border border-zinc-800 rounded-md p-3 text-xs flex gap-3.5 items-center">
+                  {selectedInquiry.product.thumbnailUrl && (
+                    <img
+                      src={selectedInquiry.product.thumbnailUrl}
+                      alt={selectedInquiry.product.name}
+                      className="h-10 w-12 object-contain bg-black rounded border border-zinc-800 p-0.5"
+                    />
+                  )}
+                  <div className="flex-1">
+                    <p className="font-extrabold text-gold uppercase tracking-widest text-[9px] flex items-center gap-1">
+                      Catalog Product Inquiry
+                      <ArrowUpRight className="h-3 w-3" />
+                    </p>
+                    <Link
+                      href={`/products/${selectedInquiry.product.slug}`}
+                      target="_blank"
+                      className="text-primary font-bold hover:underline"
+                    >
+                      {selectedInquiry.product.name}
+                    </Link>
+                    <p className="text-zinc-500 font-mono text-[10px] mt-0.5">SKU: {selectedInquiry.product.sku}</p>
+                  </div>
+                </div>
+              )}
+
               {/* Message Spec Box */}
               <div className="space-y-2">
                 <div className="flex justify-between text-[10px] uppercase font-bold text-muted-foreground tracking-widest">
@@ -396,9 +509,31 @@ export default function AdminInquiriesPage() {
                     {new Date(selectedInquiry.createdAt).toLocaleString()}
                   </span>
                 </div>
-                <div className="bg-secondary/40 border border-zinc-800 rounded-md p-4 text-sm leading-relaxed text-zinc-300 whitespace-pre-wrap max-h-60 overflow-y-auto font-sans">
+                <div className="bg-secondary/40 border border-zinc-800 rounded-md p-4 text-xs leading-relaxed text-zinc-300 whitespace-pre-wrap max-h-40 overflow-y-auto">
                   {selectedInquiry.message}
                 </div>
+              </div>
+
+              {/* Admin response textbox */}
+              <div className="space-y-2 border-t border-border pt-4">
+                <Label htmlFor="adminResponse" className="text-xs uppercase font-extrabold tracking-widest text-zinc-400">
+                  Sales Representative Response / Reply Message
+                </Label>
+                <textarea
+                  id="adminResponse"
+                  value={adminResponseInput}
+                  onChange={(e) => setAdminResponseInput(e.target.value)}
+                  placeholder="Type the response/quote info here. Saving will automatically mark inquiry status as Resolved."
+                  rows={4}
+                  className="w-full p-3 rounded-md bg-secondary/30 border border-zinc-800 focus:border-gold text-white text-xs leading-relaxed resize-none focus:outline-none"
+                />
+                <Button
+                  size="sm"
+                  onClick={handleSaveReply}
+                  className="bg-gold hover:bg-gold-hover text-black font-extrabold uppercase tracking-wider text-[10px] h-9 px-4 rounded"
+                >
+                  Save Reply & Resolve
+                </Button>
               </div>
             </div>
 
@@ -429,6 +564,107 @@ export default function AdminInquiriesPage() {
                 </Button>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Inquiry Modal */}
+      {isAddModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-card border border-border w-full max-w-md rounded-lg shadow-lg overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex justify-between items-center p-4 border-b border-border bg-muted/40">
+              <h3 className="font-semibold text-lg uppercase tracking-wider text-foreground">
+                Add Manual Inquiry
+              </h3>
+              <Button variant="ghost" size="icon" onClick={() => setIsAddModalOpen(false)}>
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+            
+            <form onSubmit={handleAddSubmit}>
+              <div className="p-6 space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="add_name">Sender Name</Label>
+                    <Input
+                      id="add_name"
+                      required
+                      value={addFormData.name}
+                      onChange={(e) => setAddFormData((p) => ({ ...p, name: e.target.value }))}
+                      placeholder="e.g. Salim Ali"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="add_email">Email Address</Label>
+                    <Input
+                      id="add_email"
+                      type="email"
+                      required
+                      value={addFormData.email}
+                      onChange={(e) => setAddFormData((p) => ({ ...p, email: e.target.value }))}
+                      placeholder="e.g. salim@firm.ae"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="add_phone">Phone Number</Label>
+                    <Input
+                      id="add_phone"
+                      required
+                      value={addFormData.phone}
+                      onChange={(e) => setAddFormData((p) => ({ ...p, phone: e.target.value }))}
+                      placeholder="e.g. +971 50 123 4567"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="add_status">Status</Label>
+                    <select
+                      id="add_status"
+                      value={addFormData.status}
+                      onChange={(e) => setAddFormData((p) => ({ ...p, status: e.target.value as any }))}
+                      className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm focus:outline-none"
+                    >
+                      <option value="pending">Pending</option>
+                      <option value="resolved">Resolved</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="add_subject">Inquiry Subject</Label>
+                  <Input
+                    id="add_subject"
+                    value={addFormData.subject}
+                    onChange={(e) => setAddFormData((p) => ({ ...p, subject: e.target.value }))}
+                    placeholder="e.g. Custom quote request for safety wear"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="add_message">Message Details</Label>
+                  <textarea
+                    id="add_message"
+                    required
+                    value={addFormData.message}
+                    onChange={(e) => setAddFormData((p) => ({ ...p, message: e.target.value }))}
+                    rows={4}
+                    placeholder="Describe client requirements recorded via call/email..."
+                    className="w-full p-3 rounded-md bg-secondary/30 border border-zinc-800 focus:border-gold text-white text-xs leading-relaxed resize-none focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="p-4 border-t border-border flex justify-end gap-2 bg-secondary/20">
+                <Button type="button" variant="outline" onClick={() => setIsAddModalOpen(false)}>
+                  Cancel
+                </Button>
+                <Button type="submit">
+                  Save Record
+                </Button>
+              </div>
+            </form>
           </div>
         </div>
       )}

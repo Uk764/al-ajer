@@ -14,7 +14,8 @@ import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { Badge } from "@/shared/components/ui/badge";
-import { Plus, Pencil, Trash2, X, RefreshCw } from "lucide-react";
+import * as LucideIcons from "lucide-react";
+import { Plus, Pencil, Trash2, X, RefreshCw, Upload, Image as ImageIcon, Boxes } from "lucide-react";
 
 export default function AdminCategoriesPage() {
   const { token } = useAuth();
@@ -30,8 +31,13 @@ export default function AdminCategoriesPage() {
     name: "",
     slug: "",
     parent: "",
+    description: "",
+    imageUrl: "",
+    icon: "Boxes",
     isActive: true,
   });
+
+  const [isUploading, setIsUploading] = useState(false);
 
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(null);
@@ -59,6 +65,9 @@ export default function AdminCategoriesPage() {
       name: "",
       slug: "",
       parent: "",
+      description: "",
+      imageUrl: "",
+      icon: "Boxes",
       isActive: true,
     });
     setError("");
@@ -71,6 +80,9 @@ export default function AdminCategoriesPage() {
       name: category.name,
       slug: category.slug,
       parent: typeof category.parent === "object" && category.parent ? category.parent._id : (category.parent || ""),
+      description: category.description || "",
+      imageUrl: category.imageUrl || "",
+      icon: category.icon || "Boxes",
       isActive: category.isActive !== false,
     });
     setError("");
@@ -99,6 +111,36 @@ export default function AdminCategoriesPage() {
     }));
   }
 
+  async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file || !token) return;
+
+    setIsUploading(true);
+    setError("");
+
+    const uploadFormData = new FormData();
+    uploadFormData.append("image", file);
+
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/upload`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: uploadFormData,
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Upload failed");
+
+      setFormData((prev) => ({ ...prev, imageUrl: data.url }));
+    } catch (err: any) {
+      setError(err.message || "Failed to upload category image.");
+    } finally {
+      setIsUploading(false);
+    }
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
@@ -111,6 +153,9 @@ export default function AdminCategoriesPage() {
         name: formData.name,
         slug: formData.slug || formData.name.toLowerCase().replace(/\s+/g, "-"),
         parent: formData.parent === "" ? null : formData.parent,
+        description: formData.description,
+        imageUrl: formData.imageUrl || null,
+        icon: formData.icon,
         isActive: formData.isActive,
       };
 
@@ -180,6 +225,8 @@ export default function AdminCategoriesPage() {
               <table className="w-full text-left text-sm border-collapse">
                 <thead>
                   <tr className="border-b border-border text-muted-foreground font-medium">
+                    <th className="py-3 px-4 w-14">Image</th>
+                    <th className="py-3 px-4">Icon</th>
                     <th className="py-3 px-4">Name</th>
                     <th className="py-3 px-4">Slug</th>
                     <th className="py-3 px-4">Parent Category</th>
@@ -188,47 +235,76 @@ export default function AdminCategoriesPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
-                  {categories.map((category) => (
-                    <tr key={category._id} className="hover:bg-secondary/40 transition-colors">
-                      <td className="py-3 px-4 font-medium">{category.name}</td>
-                      <td className="py-3 px-4 text-muted-foreground font-mono text-xs">{category.slug}</td>
-                      <td className="py-3 px-4">
-                        {category.parent ? (
-                          <span className="text-xs bg-[#161616] px-2 py-1 rounded border border-zinc-800 text-zinc-300">
-                            {typeof category.parent === "object" ? category.parent.name : category.parent}
-                          </span>
-                        ) : (
-                          <span className="text-xs text-muted-foreground italic">None (Root)</span>
-                        )}
-                      </td>
-                      <td className="py-3 px-4">
-                        <Badge variant={category.isActive !== false ? "default" : "secondary"}>
-                          {category.isActive !== false ? "Active" : "Inactive"}
-                        </Badge>
-                      </td>
-                      <td className="py-3 px-4 text-right">
-                        <div className="flex justify-end gap-2">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleEditClick(category)}
-                            title="Edit Category"
-                          >
-                            <Pencil className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleDeleteClick(category)}
-                            title="Delete Category"
-                            className="text-destructive hover:bg-destructive/10 hover:text-destructive"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                  {categories.map((category) => {
+                    let DynamicIcon = Boxes;
+                    if (category.icon) {
+                      const FoundIcon = (LucideIcons as any)[category.icon];
+                      if (FoundIcon) DynamicIcon = FoundIcon;
+                    }
+
+                    return (
+                      <tr key={category._id} className="hover:bg-secondary/40 transition-colors">
+                        <td className="py-3 px-4">
+                          {category.imageUrl ? (
+                            <img
+                              src={category.imageUrl}
+                              alt={category.name}
+                              className="h-8 w-12 object-cover bg-zinc-900 rounded border border-zinc-800"
+                            />
+                          ) : (
+                            <div className="h-8 w-12 bg-zinc-900 rounded border border-zinc-850 flex items-center justify-center text-muted-foreground">
+                              <ImageIcon className="h-4 w-4" />
+                            </div>
+                          )}
+                        </td>
+                        <td className="py-3 px-4 text-gold">
+                          <DynamicIcon className="h-4 w-4 stroke-[2]" />
+                        </td>
+                        <td className="py-3 px-4">
+                          <p className="font-semibold text-sm text-foreground">{category.name}</p>
+                          {category.description && (
+                            <p className="text-xs text-muted-foreground truncate max-w-xs">{category.description}</p>
+                          )}
+                        </td>
+                        <td className="py-3 px-4 text-muted-foreground font-mono text-xs">{category.slug}</td>
+                        <td className="py-3 px-4">
+                          {category.parent ? (
+                            <span className="text-xs bg-[#161616] px-2 py-1 rounded border border-zinc-800 text-zinc-300">
+                              {typeof category.parent === "object" ? category.parent.name : category.parent}
+                            </span>
+                          ) : (
+                            <span className="text-xs text-muted-foreground italic">None (Root)</span>
+                          )}
+                        </td>
+                        <td className="py-3 px-4">
+                          <Badge variant={category.isActive !== false ? "default" : "secondary"}>
+                            {category.isActive !== false ? "Active" : "Inactive"}
+                          </Badge>
+                        </td>
+                        <td className="py-3 px-4 text-right">
+                          <div className="flex justify-end gap-2">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleEditClick(category)}
+                              title="Edit Category"
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleDeleteClick(category)}
+                              title="Delete Category"
+                              className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -247,7 +323,7 @@ export default function AdminCategoriesPage() {
               </Button>
             </div>
             <form onSubmit={handleSubmit}>
-              <div className="p-6 space-y-4">
+              <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
                 <div className="space-y-1.5">
                   <Label htmlFor="name">Category Name</Label>
                   <Input
@@ -268,24 +344,85 @@ export default function AdminCategoriesPage() {
                     required
                   />
                 </div>
+
                 <div className="space-y-1.5">
-                  <Label htmlFor="parent">Parent Category</Label>
-                  <select
-                    id="parent"
-                    value={formData.parent}
-                    onChange={(e) => setFormData((p) => ({ ...p, parent: e.target.value }))}
-                    className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                  >
-                    <option value="">None (Root Category)</option>
-                    {categories
-                      .filter((c) => !editingCategory || c._id !== editingCategory._id) // prevent self-parenting
-                      .map((c) => (
-                        <option key={c._id} value={c._id}>
-                          {c.name}
+                  <Label htmlFor="description">Category Description</Label>
+                  <textarea
+                    id="description"
+                    value={formData.description}
+                    onChange={(e) => setFormData((p) => ({ ...p, description: e.target.value }))}
+                    placeholder="Brief summary of items under this department..."
+                    rows={3}
+                    className="w-full p-2.5 rounded-md border border-input bg-background text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 leading-relaxed resize-none"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="icon">Lucide Icon</Label>
+                    <select
+                      id="icon"
+                      value={formData.icon}
+                      onChange={(e) => setFormData((p) => ({ ...p, icon: e.target.value }))}
+                      className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm focus-visible:outline-none"
+                    >
+                      {["Boxes", "Wrench", "Hammer", "Shield", "Droplets", "Cpu", "Zap", "Box", "Lock", "Cog", "Tool"].map((iconName) => (
+                        <option key={iconName} value={iconName}>
+                          {iconName}
                         </option>
                       ))}
-                  </select>
+                    </select>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label htmlFor="parent">Parent Category</Label>
+                    <select
+                      id="parent"
+                      value={formData.parent}
+                      onChange={(e) => setFormData((p) => ({ ...p, parent: e.target.value }))}
+                      className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm focus-visible:outline-none"
+                    >
+                      <option value="">None (Root Category)</option>
+                      {categories
+                        .filter((c) => !editingCategory || c._id !== editingCategory._id) // prevent self-parenting
+                        .map((c) => (
+                          <option key={c._id} value={c._id}>
+                            {c.name}
+                          </option>
+                        ))}
+                    </select>
+                  </div>
                 </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="imageUrl">Category Header Image</Label>
+                  <div className="flex items-center gap-3">
+                    {formData.imageUrl && (
+                      <img
+                        src={formData.imageUrl}
+                        alt="Preview"
+                        className="h-10 w-16 object-cover bg-zinc-900 border border-zinc-800 rounded p-0.5"
+                      />
+                    )}
+                    <div className="flex-1 relative">
+                      <Input
+                        type="file"
+                        id="imageUrl"
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                        className="hidden"
+                      />
+                      <Label
+                        htmlFor="imageUrl"
+                        className="flex items-center justify-center gap-2 border border-input rounded-md h-10 px-3 cursor-pointer hover:bg-secondary transition-colors text-sm font-medium"
+                      >
+                        <Upload className="h-4 w-4" />
+                        {isUploading ? "Uploading..." : "Upload Category Image"}
+                      </Label>
+                    </div>
+                  </div>
+                </div>
+
                 <div className="flex items-center gap-2 pt-2">
                   <input
                     type="checkbox"
@@ -301,7 +438,7 @@ export default function AdminCategoriesPage() {
                 <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)}>
                   Cancel
                 </Button>
-                <Button type="submit">
+                <Button type="submit" disabled={isUploading}>
                   {editingCategory ? "Save Changes" : "Create Category"}
                 </Button>
               </div>

@@ -21,9 +21,13 @@ interface Brand {
 export default function ShopFilters({
   categories,
   brands,
+  hideCategoryFilter = false,
+  hideBrandFilter = false,
 }: {
   categories: Category[];
   brands: Brand[];
+  hideCategoryFilter?: boolean;
+  hideBrandFilter?: boolean;
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -100,67 +104,71 @@ export default function ShopFilters({
       </div>
 
       {/* Categories */}
-      <div className="space-y-4">
-        <h4 className="text-xs font-bold text-zinc-400 uppercase tracking-widest">
-          Categories
-        </h4>
-        <div className="space-y-1.5">
-          {categories.map((cat) => {
-            const isSelected = currentCategory === cat._id;
-            return (
-              <button
-                key={cat._id}
-                onClick={() => updateParam("category", isSelected ? null : cat._id)}
-                className={`flex items-center justify-between w-full text-left text-xs px-3 py-2 rounded-md font-semibold transition-all duration-200 cursor-pointer ${
-                  isSelected
-                    ? "bg-gold/10 border-l-2 border-gold text-gold pl-4"
-                    : "text-zinc-400 hover:text-gold hover:bg-zinc-900/50 border-l-2 border-transparent"
-                }`}
-              >
-                <span className="flex items-center gap-2">
-                  <ChevronRight className={`h-3 w-3 transition-transform ${isSelected ? "rotate-90 text-gold" : "text-zinc-600"}`} />
-                  {cat.name}
-                </span>
-              </button>
-            );
-          })}
+      {!hideCategoryFilter && (
+        <div className="space-y-4">
+          <h4 className="text-xs font-bold text-zinc-400 uppercase tracking-widest">
+            Categories
+          </h4>
+          <div className="space-y-1.5">
+            {categories.map((cat) => {
+              const isSelected = currentCategory === cat._id;
+              return (
+                <button
+                  key={cat._id}
+                  onClick={() => updateParam("category", isSelected ? null : cat._id)}
+                  className={`flex items-center justify-between w-full text-left text-xs px-3 py-2 rounded-md font-semibold transition-all duration-200 cursor-pointer ${
+                    isSelected
+                      ? "bg-gold/10 border-l-2 border-gold text-gold pl-4"
+                      : "text-zinc-400 hover:text-gold hover:bg-zinc-900/50 border-l-2 border-transparent"
+                  }`}
+                >
+                  <span className="flex items-center gap-2">
+                    <ChevronRight className={`h-3 w-3 transition-transform ${isSelected ? "rotate-90 text-gold" : "text-zinc-600"}`} />
+                    {cat.name}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Brands */}
-      <div className="space-y-4">
-        <h4 className="text-xs font-bold text-zinc-400 uppercase tracking-widest">
-          Brands
-        </h4>
-        <div className="space-y-2">
-          {brands.map((brand) => {
-            const isSelected = currentBrand === brand._id;
-            return (
-              <label
-                key={brand._id}
-                className="flex items-center gap-3 text-xs font-semibold text-zinc-400 hover:text-zinc-200 cursor-pointer select-none group"
-              >
-                <div className="relative flex items-center justify-center">
-                  <input
-                    type="checkbox"
-                    checked={isSelected}
-                    onChange={() => updateParam("brand", isSelected ? null : brand._id)}
-                    className="sr-only"
-                  />
-                  <div className={`h-4.5 w-4.5 rounded border transition-all duration-200 flex items-center justify-center ${
-                    isSelected
-                      ? "border-gold bg-gold text-black shadow-md shadow-gold/25"
-                      : "border-zinc-800 bg-[#121212] group-hover:border-gold/40"
-                  }`}>
-                    {isSelected && <Check className="h-3 w-3 stroke-[3]" />}
+      {!hideBrandFilter && (
+        <div className="space-y-4">
+          <h4 className="text-xs font-bold text-zinc-400 uppercase tracking-widest">
+            Brands
+          </h4>
+          <div className="space-y-2">
+            {brands.map((brand) => {
+              const isSelected = currentBrand === brand._id;
+              return (
+                <label
+                  key={brand._id}
+                  className="flex items-center gap-3 text-xs font-semibold text-zinc-400 hover:text-zinc-200 cursor-pointer select-none group"
+                >
+                  <div className="relative flex items-center justify-center">
+                    <input
+                      type="checkbox"
+                      checked={isSelected}
+                      onChange={() => updateParam("brand", isSelected ? null : brand._id)}
+                      className="sr-only"
+                    />
+                    <div className={`h-4.5 w-4.5 rounded border transition-all duration-200 flex items-center justify-center ${
+                      isSelected
+                        ? "border-gold bg-gold text-black shadow-md shadow-gold/25"
+                        : "border-zinc-800 bg-[#121212] group-hover:border-gold/40"
+                    }`}>
+                      {isSelected && <Check className="h-3 w-3 stroke-[3]" />}
+                    </div>
                   </div>
-                </div>
-                <span>{brand.name}</span>
-              </label>
-            );
-          })}
+                  <span>{brand.name}</span>
+                </label>
+              );
+            })}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Price Range */}
       <div className="space-y-4">

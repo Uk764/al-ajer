@@ -6,6 +6,7 @@ import Image from "next/image";
 import ProductCard from "@/customer/components/ProductCard";
 import NewsletterForm from "@/customer/components/NewsletterForm";
 import HeroSlider from "@/customer/components/HeroSlider";
+import * as LucideIcons from "lucide-react";
 import {
   ShieldCheck,
   Wrench,
@@ -100,22 +101,29 @@ export default async function Home() {
         </div>
 
         <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-          {referenceCategories.map((refCat) => {
-            const dbCat = categoriesMap.get(refCat.slug);
-            const href = dbCat ? `/shop?category=${dbCat._id}` : `/shop`;
-            const IconComponent = categoryIcons[refCat.slug as keyof typeof categoryIcons] || Boxes;
+          {categories.filter(c => c.isActive !== false).map((cat) => {
+            const href = `/category/${cat.slug}`;
+            
+            // Map icon string dynamically or fallback to slug-preset or Boxes
+            let IconComponent = Boxes;
+            if (cat.icon) {
+              const FoundIcon = (LucideIcons as any)[cat.icon];
+              if (FoundIcon) IconComponent = FoundIcon;
+            } else {
+              IconComponent = categoryIcons[cat.slug as keyof typeof categoryIcons] || Boxes;
+            }
 
             return (
-              <Link key={refCat.slug} href={href}>
+              <Link key={cat._id} href={href}>
                 <div className="group bg-[#0c0c0c] border border-zinc-900 hover:border-gold transition-all duration-300 rounded-lg p-6 flex flex-col items-center justify-center text-center h-44 cursor-pointer">
                   <div className="h-12 w-12 rounded bg-[#161616] border border-zinc-800 flex items-center justify-center text-gold group-hover:bg-gold group-hover:text-black transition-all duration-300 mb-4">
                     <IconComponent className="h-5 w-5 stroke-[2]" />
                   </div>
-                  <h3 className="font-extrabold text-xs uppercase tracking-wider text-white group-hover:text-gold transition-colors duration-300">
-                    {refCat.name}
+                  <h3 className="font-extrabold text-xs uppercase tracking-wider text-white group-hover:text-gold transition-colors duration-300 truncate w-full px-2">
+                    {cat.name}
                   </h3>
-                  <p className="text-[9px] text-zinc-500 uppercase tracking-widest font-semibold mt-1">
-                    {refCat.desc}
+                  <p className="text-[9px] text-zinc-500 uppercase tracking-widest font-semibold mt-1 line-clamp-1 w-full px-2">
+                    {cat.description || "Premium Quality Supplies"}
                   </p>
                 </div>
               </Link>

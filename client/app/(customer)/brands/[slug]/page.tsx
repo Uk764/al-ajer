@@ -1,12 +1,23 @@
-import { getBrands, getProducts } from "@/shared/lib/api";
+import { getBrands, getProducts, getCategories } from "@/shared/lib/api";
 import Link from "next/link";
 import ProductCard from "@/customer/components/ProductCard";
 import SortControl from "@/customer/components/SortControl";
-import { ChevronLeft, ChevronRight, X, Sparkles } from "lucide-react";
+import ShopFilters from "@/customer/components/ShopFilters";
+import { ChevronLeft, ChevronRight, X, Sparkles, Filter } from "lucide-react";
 
 interface BrandPageProps {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ sort?: string; page?: string }>;
+  searchParams: Promise<{
+    category?: string;
+    minPrice?: string;
+    maxPrice?: string;
+    sort?: string;
+    page?: string;
+    inStock?: string;
+    onSale?: string;
+    minRating?: string;
+    search?: string;
+  }>;
 }
 
 const brandDetails: Record<string, { desc: string; tagline: string; themeClass: string; titleStyle: string }> = {
@@ -56,10 +67,26 @@ const brandDetails: Record<string, { desc: string; tagline: string; themeClass: 
 
 export default async function BrandPage({ params, searchParams }: BrandPageProps) {
   const { slug } = await params;
-  const { sort, page } = await searchParams;
+  const resolvedParams = await searchParams;
+  const {
+    category,
+    minPrice,
+    maxPrice,
+    sort,
+    page,
+    inStock,
+    onSale,
+    minRating,
+    search,
+  } = resolvedParams;
+
   const currentPage = page ? parseInt(page) : 1;
 
-  const brands = await getBrands();
+  const [categories, brands] = await Promise.all([
+    getCategories(),
+    getBrands(),
+  ]);
+
   const currentBrand = brands.find((b) => b.slug.toLowerCase() === slug.toLowerCase());
 
   if (!currentBrand) {
@@ -79,9 +106,15 @@ export default async function BrandPage({ params, searchParams }: BrandPageProps
   // Fetch products under this brand
   const productsData = await getProducts({
     brand: currentBrand._id,
+    category,
+    minPrice: minPrice ? parseFloat(minPrice) : undefined,
+    maxPrice: maxPrice ? parseFloat(maxPrice) : undefined,
     sort,
     page: currentPage,
     limit: 12,
+    search,
+    inStock: inStock === "true",
+    onSale: onSale === "true",
   });
 
   const detail = brandDetails[currentBrand.slug.toLowerCase()] || {
@@ -90,6 +123,45 @@ export default async function BrandPage({ params, searchParams }: BrandPageProps
     themeClass: "border-gold/20 shadow-gold/5",
     titleStyle: "font-sans font-black uppercase text-gold",
   };
+
+  // Convert resolvedParams into a standard flat object for helper links
+  const paramsMap: Record<string, string> = {};
+  Object.entries(resolvedParams).forEach(([k, v]) => {
+    if (v !== undefined) paramsMap[k] = v;
+  });
+
+  function getClearFilterLink(paramToRemove: string) {
+    const params = new URLSearchParams();
+    Object.entries(paramsMap).forEach(([k, v]) => {
+      if (k !== paramToRemove && k !== "page") {
+        params.set(k, v);
+      }
+    });
+    const qs = params.toString();
+    return `/brands/${slug}${qs ? `?${qs}` : ""}`;
+  }
+
+  function getPaginationLink(pageNum: number) {
+    const params = new URLSearchParams();
+    Object.entries(paramsMap).forEach(([k, v]) => {
+      params.set(k, v);
+    });
+    params.set("page", String(pageNum));
+    return `/brands/${slug}?${params.toString()}`;
+  }
+
+  // Active filter helper details
+  const activeCategoryObj = categories.find((c) => c._id === category);
+
+  const activeFilters = [
+    search ? { label: `Search: "${search}"`, key: "search" } : null,
+    activeCategoryObj ? { label: `Category: ${activeCategoryObj.name}`, key: "category" } : null,
+    minPrice ? { label: `Min: AED ${minPrice}`, key: "minPrice" } : null,
+    maxPrice ? { label: `Max: AED ${maxPrice}`, key: "maxPrice" } : null,
+    inStock === "true" ? { label: "In Stock Only", key: "inStock" } : null,
+    onSale === "true" ? { label: "On Sale Offers", key: "onSale" } : null,
+    minRating ? { label: `${minRating} Stars & Up`, key: "minRating" } : null,
+  ].filter(Boolean) as { label: string; key: string }[];
 
   return (
     <main className="min-h-screen bg-[#070707] text-[#f5f5f5] font-sans pb-20">
@@ -143,69 +215,109 @@ export default async function BrandPage({ params, searchParams }: BrandPageProps
           </div>
         </div>
 
-        {/* Product Grid */}
-        {productsData.products.length === 0 ? (
-          <div className="text-center py-20 bg-[#0c0c0c] border border-zinc-900 rounded-lg">
-            <p className="text-zinc-500 text-sm font-bold uppercase tracking-wider">No products available for this brand yet.</p>
-            <Link href="/brands" className="inline-block mt-4 text-[10px] font-extrabold uppercase tracking-widest text-gold hover:underline">
-              Browse All Brands
-            </Link>
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-            {productsData.products.map((product) => (
-              <ProductCard key={product._id} product={product} />
-            ))}
-          </div>
-        )}
+        <div className="flex flex-col md:flex-row gap-8">
+          {/* Filters Sidebar */}
+          <ShopFilters categories={categories} brands={brands} hideBrandFilter={true} />
 
-        {/* Pagination */}
-        {productsData.pagination.totalPages > 1 && (
-          <div className="flex items-center justify-center gap-2 border-t border-zinc-900 pt-8 mt-12">
-            {currentPage > 1 ? (
-              <Link
-                href={`/brands/${slug}?page=${currentPage - 1}${sort ? `&sort=${sort}` : ""}`}
-                className="h-9 w-9 rounded border border-zinc-800 text-zinc-400 hover:border-gold hover:text-gold flex items-center justify-center transition-colors"
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </Link>
-            ) : (
-              <span className="h-9 w-9 rounded border border-zinc-900 text-zinc-700 flex items-center justify-center cursor-not-allowed">
-                <ChevronLeft className="h-4 w-4" />
-              </span>
-            )}
-
-            {Array.from({ length: productsData.pagination.totalPages }, (_, i) => i + 1).map((p) => {
-              const isCurrent = p === currentPage;
-              return (
+          {/* Product Listing Section */}
+          <div className="flex-1 space-y-6">
+            {/* Active Filters Tag Strip */}
+            {activeFilters.length > 0 && (
+              <div className="flex flex-wrap items-center gap-2 bg-[#0c0c0c] border border-zinc-900 rounded-lg p-3 px-4">
+                <span className="text-[10px] uppercase font-bold text-zinc-500 tracking-widest mr-2 flex items-center gap-1.5">
+                  <Filter className="h-3 w-3 text-gold" />
+                  Active:
+                </span>
+                {activeFilters.map((f) => (
+                  <Link
+                    key={f.key}
+                    href={getClearFilterLink(f.key)}
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-[#161616] border border-zinc-800 text-[10px] text-zinc-300 font-bold uppercase tracking-wider hover:text-gold hover:border-gold/40 transition-colors"
+                  >
+                    {f.label}
+                    <X className="h-2.5 w-2.5 text-zinc-500 hover:text-gold" />
+                  </Link>
+                ))}
                 <Link
-                  key={p}
-                  href={`/brands/${slug}?page=${p}${sort ? `&sort=${sort}` : ""}`}
-                  className={`h-9 w-9 rounded text-xs font-bold flex items-center justify-center transition-all duration-200 border ${
-                    isCurrent
-                      ? "bg-gold text-black border-gold shadow-md shadow-gold/20"
-                      : "border-zinc-800 text-zinc-400 bg-transparent hover:border-gold/60 hover:text-gold"
-                  }`}
+                  href={`/brands/${slug}`}
+                  className="text-[10px] uppercase font-bold tracking-widest text-gold hover:text-gold-hover ml-auto"
                 >
-                  {p}
+                  Clear All
                 </Link>
-              );
-            })}
+              </div>
+            )}
 
-            {currentPage < productsData.pagination.totalPages ? (
-              <Link
-                href={`/brands/${slug}?page=${currentPage + 1}${sort ? `&sort=${sort}` : ""}`}
-                className="h-9 w-9 rounded border border-zinc-800 text-zinc-400 hover:border-gold hover:text-gold flex items-center justify-center transition-colors"
-              >
-                <ChevronRight className="h-4 w-4" />
-              </Link>
+            {/* Product Grid */}
+            {productsData.products.length === 0 ? (
+              <div className="text-center py-24 bg-[#0c0c0c] border border-zinc-900 rounded-lg">
+                <X className="h-10 w-10 text-gold mx-auto mb-4 animate-bounce" />
+                <h3 className="text-lg font-bold text-white uppercase tracking-wider">No Products Found</h3>
+                <p className="text-zinc-500 text-xs mt-2 max-w-xs mx-auto">
+                  We couldn't find any products matching those filters. Try adjusting your selections or clear all filters.
+                </p>
+                <Link href={`/brands/${slug}`}>
+                  <span className="inline-block bg-gold hover:bg-gold-hover text-black px-4 py-1.5 mt-6 uppercase font-bold tracking-wider text-[10px] cursor-pointer rounded">
+                    Clear Filters
+                  </span>
+                </Link>
+              </div>
             ) : (
-              <span className="h-9 w-9 rounded border border-zinc-900 text-zinc-700 flex items-center justify-center cursor-not-allowed">
-                <ChevronRight className="h-4 w-4" />
-              </span>
+              <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
+                {productsData.products.map((product) => (
+                  <ProductCard key={product._id} product={product} />
+                ))}
+              </div>
+            )}
+
+            {/* Pagination */}
+            {productsData.pagination.totalPages > 1 && (
+              <div className="flex items-center justify-center gap-2 border-t border-zinc-900 pt-8 mt-12">
+                {currentPage > 1 ? (
+                  <Link
+                    href={getPaginationLink(currentPage - 1)}
+                    className="h-9 w-9 rounded border border-zinc-800 text-zinc-400 hover:border-gold hover:text-gold flex items-center justify-center transition-colors"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Link>
+                ) : (
+                  <span className="h-9 w-9 rounded border border-zinc-900 text-zinc-700 flex items-center justify-center cursor-not-allowed">
+                    <ChevronLeft className="h-4 w-4" />
+                  </span>
+                )}
+
+                {Array.from({ length: productsData.pagination.totalPages }, (_, i) => i + 1).map((p) => {
+                  const isCurrent = p === currentPage;
+                  return (
+                    <Link
+                      key={p}
+                      href={getPaginationLink(p)}
+                      className={`h-9 w-9 rounded text-xs font-bold flex items-center justify-center transition-all duration-200 border ${
+                        isCurrent
+                          ? "bg-gold text-black border-gold shadow-md shadow-gold/20"
+                          : "border-zinc-800 text-zinc-400 bg-transparent hover:border-gold/60 hover:text-gold"
+                      }`}
+                    >
+                      {p}
+                    </Link>
+                  );
+                })}
+
+                {currentPage < productsData.pagination.totalPages ? (
+                  <Link
+                    href={getPaginationLink(currentPage + 1)}
+                    className="h-9 w-9 rounded border border-zinc-800 text-zinc-400 hover:border-gold hover:text-gold flex items-center justify-center transition-colors"
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Link>
+                ) : (
+                  <span className="h-9 w-9 rounded border border-zinc-900 text-zinc-700 flex items-center justify-center cursor-not-allowed">
+                    <ChevronRight className="h-4 w-4" />
+                  </span>
+                )}
+              </div>
             )}
           </div>
-        )}
+        </div>
       </section>
     </main>
   );

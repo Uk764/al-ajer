@@ -6,6 +6,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.deleteProduct = exports.updateProduct = exports.getProductBySlug = exports.getProductById = exports.getProducts = exports.createProduct = void 0;
 const Product_1 = __importDefault(require("../models/Product"));
 const Inventory_1 = __importDefault(require("../models/Inventory"));
+const Category_1 = __importDefault(require("../models/Category"));
+const Brand_1 = __importDefault(require("../models/Brand"));
 const createProduct = async (req, res) => {
     try {
         const product = await Product_1.default.create(req.body);
@@ -23,7 +25,10 @@ const getProducts = async (req, res) => {
         const limit = parseInt(req.query.limit) || 20;
         const skip = (page - 1) * limit;
         // Build a MongoDB filter object based on which query params were sent
-        const filter = { isActive: true };
+        const filter = {};
+        if (req.query.all !== 'true') {
+            filter.isActive = true;
+        }
         if (req.query.category) {
             filter.category = req.query.category;
         }
@@ -38,7 +43,21 @@ const getProducts = async (req, res) => {
                 filter.sellingPrice.$lte = Number(req.query.maxPrice);
         }
         if (req.query.search) {
-            filter.$text = { $search: req.query.search };
+            const searchStr = req.query.search;
+            const searchRegex = new RegExp(searchStr, 'i');
+            // Find matching categories and brands
+            const [matchingCategories, matchingBrands] = await Promise.all([
+                Category_1.default.find({ name: searchRegex }).distinct('_id'),
+                Brand_1.default.find({ name: searchRegex }).distinct('_id'),
+            ]);
+            filter.$or = [
+                { name: searchRegex },
+                { sku: searchRegex },
+                { barcode: searchRegex },
+                { description: searchRegex },
+                { category: { $in: matchingCategories } },
+                { brand: { $in: matchingBrands } }
+            ];
         }
         if (req.query.onSale === 'true') {
             filter.discountedPrice = { $ne: null, $gt: 0 };
@@ -61,7 +80,7 @@ const getProducts = async (req, res) => {
         const [products, total] = await Promise.all([
             Product_1.default.find(filter)
                 .populate('category', 'name slug')
-                .populate('brand', 'name slug')
+                .populate('brand', 'name slug logoUrl')
                 .sort(sortOption)
                 .skip(skip)
                 .limit(limit),
@@ -86,7 +105,7 @@ const getProductById = async (req, res) => {
     try {
         const product = await Product_1.default.findById(req.params.id)
             .populate('category', 'name slug')
-            .populate('brand', 'name slug');
+            .populate('brand', 'name slug logoUrl');
         if (!product) {
             return res.status(404).json({ message: 'Product not found' });
         }
@@ -101,7 +120,7 @@ const getProductBySlug = async (req, res) => {
     try {
         const product = await Product_1.default.findOne({ slug: req.params.slug })
             .populate('category', 'name slug')
-            .populate('brand', 'name slug');
+            .populate('brand', 'name slug logoUrl');
         if (!product) {
             return res.status(404).json({ message: 'Product not found' });
         }
@@ -119,7 +138,7 @@ const updateProduct = async (req, res) => {
             runValidators: true,
         })
             .populate('category', 'name slug')
-            .populate('brand', 'name slug');
+            .populate('brand', 'name slug logoUrl');
         if (!product) {
             return res.status(404).json({ message: 'Product not found' });
         }
