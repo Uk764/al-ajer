@@ -34,7 +34,7 @@ export default function NavMenu() {
               <span>{item.label}</span>
               {/* Gold animated line indicator */}
               <span
-                className={`absolute bottom-0 left-0 h-[2px] bg-gold transition-all duration-300 ${
+                className={`absolute bottom-0 left-0 h-0.5 bg-gold transition-all duration-300 ${
                   isActive ? "w-full scale-x-100" : "w-full scale-x-0 group-hover:scale-x-100 hover:scale-x-100"
                 } origin-left`}
               />
