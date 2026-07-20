@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/shared/components/ui/card";
 import Link from "next/link";
 import Image from "next/image";
 import ProductCard from "@/customer/components/ProductCard";
-import NewsletterForm from "@/customer/components/NewsletterForm";
+//import NewsletterForm from "@/customer/components/NewsletterForm";
 import {
   ShieldCheck,
   Wrench,
@@ -281,24 +281,6 @@ export default async function Home() {
               <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-400 mt-1">{item.desc}</span>
             </div>
           ))}
-        </div>
-      </section>
-
-      {/* 8. Stay Updated (Newsletter Section) */}
-      <section className="mx-auto max-w-7xl px-4 py-16">
-        <div className="bg-[#0c0c0c] border border-zinc-900 rounded-lg p-8 md:p-12 text-center relative overflow-hidden shadow-2xl max-w-4xl mx-auto">
-          <div className="relative z-10 max-w-xl mx-auto">
-            <span className="text-[10px] font-extrabold text-gold uppercase tracking-[0.2em]">
-              STAY UPDATED
-            </span>
-            <h3 className="text-xl md:text-2xl font-black uppercase text-white mt-4 tracking-wide">
-              Subscribe to our newsletter for the latest offers and updates.
-            </h3>
-
-            <div className="mt-8">
-              <NewsletterForm />
-            </div>
-          </div>
         </div>
       </section>
     </main>
