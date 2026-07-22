@@ -4,11 +4,10 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Heart, RefreshCw, ShoppingCart, Star, CheckCircle, Truck, RefreshCcw, ShieldCheck, CreditCard, ChevronRight, Check, X } from "lucide-react";
+import { Heart, ShoppingCart, Star, CheckCircle, Truck, RefreshCcw, ShieldCheck, CreditCard, ChevronRight, Check, X } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 import { Badge } from "@/shared/components/ui/badge";
 import { useWishlist } from "@/shared/context/WishlistContext";
-import { useCompare } from "@/shared/context/CompareContext";
 import { useCart } from "@/shared/context/CartContext";
 import { useAuth } from "@/shared/context/AuthContext";
 import { Product, InventoryRecord } from "@/shared/lib/api";
@@ -26,7 +25,6 @@ export default function ProductDetailsClient({
   relatedProducts,
 }: ProductDetailsClientProps) {
   const { toggleWishlist, isInWishlist } = useWishlist();
-  const { toggleCompare, isInCompare } = useCompare();
   const { refreshCart } = useCart();
   const { user, token } = useAuth();
   const router = useRouter();
@@ -52,9 +50,8 @@ export default function ProductDetailsClient({
   const stockQuantity = Number(product.stock ?? 0);
   const isInStock = stockQuantity > 0;
 
-  // Toggle wishlist / compare
+  // Toggle wishlist
   const isWishlisted = isInWishlist(product._id);
-  const isCompared = isInCompare(product._id);
 
   // Deterministic ratings
   let hash = 0;
@@ -190,8 +187,8 @@ export default function ProductDetailsClient({
               </div>
             )}
 
-            {/* Wishlist & Compare Quick Actions */}
-            <div className="flex justify-center gap-8 pt-4 border-t border-zinc-900/40 text-xs font-bold uppercase tracking-wider">
+            {/* Wishlist Quick Action */}
+            <div className="flex justify-center pt-4 border-t border-zinc-900/40 text-xs font-bold uppercase tracking-wider">
               <button
                 onClick={() => toggleWishlist(product)}
                 className={`flex items-center gap-2 transition-colors cursor-pointer ${
@@ -200,16 +197,6 @@ export default function ProductDetailsClient({
               >
                 <Heart className={`h-4 w-4 ${isWishlisted ? "fill-gold text-gold" : ""}`} />
                 {isWishlisted ? "Wishlisted" : "Add to Wishlist"}
-              </button>
-
-              <button
-                onClick={() => toggleCompare(product)}
-                className={`flex items-center gap-2 transition-colors cursor-pointer ${
-                  isCompared ? "text-gold hover:text-gold-hover" : "text-zinc-500 hover:text-gold"
-                }`}
-              >
-                <RefreshCw className="h-4 w-4" />
-                {isCompared ? "Remove Compare" : "Compare"}
               </button>
             </div>
           </div>

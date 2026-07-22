@@ -3,10 +3,9 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Heart, RefreshCw, ShoppingCart, Star } from "lucide-react";
+import { Heart, ShoppingCart, Star } from "lucide-react";
 import { Badge } from "@/shared/components/ui/badge";
 import { useWishlist } from "@/shared/context/WishlistContext";
-import { useCompare } from "@/shared/context/CompareContext";
 import { useCart } from "@/shared/context/CartContext";
 import { useAuth } from "@/shared/context/AuthContext";
 import { useRouter } from "next/navigation";
@@ -23,7 +22,6 @@ function isNew(createdAt: string) {
 
 export default function ProductCard({ product }: ProductCardProps) {
   const { toggleWishlist, isInWishlist } = useWishlist();
-  const { toggleCompare, isInCompare } = useCompare();
   const { refreshCart } = useCart();
   const { user, token } = useAuth();
   const router = useRouter();
@@ -32,7 +30,6 @@ export default function ProductCard({ product }: ProductCardProps) {
   const [added, setAdded] = useState(false);
 
   const isWishlisted = isInWishlist(product._id);
-  const isCompared = isInCompare(product._id);
   const stockQuantity = Number(product.stock ?? 0);
   const isInStock = stockQuantity > 0;
 
@@ -82,12 +79,6 @@ export default function ProductCard({ product }: ProductCardProps) {
     toggleWishlist(product);
   };
 
-  const handleCompareToggle = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    toggleCompare(product);
-  };
-
   const productUrl = `/products/${product.slug}`;
 
   return (
@@ -135,15 +126,6 @@ export default function ProductCard({ product }: ProductCardProps) {
             }`}
           >
             <Heart className={`h-3.5 w-3.5 ${isWishlisted ? "fill-gold text-gold" : ""}`} />
-          </button>
-          <button
-            onClick={handleCompareToggle}
-            aria-label="Compare"
-            className={`h-8 w-8 rounded-full bg-black/80 flex items-center justify-center shadow-lg transition-colors border border-zinc-800 cursor-pointer ${
-              isCompared ? "text-gold bg-black border-gold/40" : "text-zinc-400 hover:text-gold hover:bg-[#121212]"
-            }`}
-          >
-            <RefreshCw className={`h-3.5 w-3.5 ${isCompared ? "animate-spin-once" : ""}`} />
           </button>
         </div>
       </div>

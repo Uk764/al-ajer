@@ -4,7 +4,6 @@ import "./globals.css";
 import { AuthProvider } from "@/shared/context/AuthContext";
 import { CartProvider } from "@/shared/context/CartContext";
 import { WishlistProvider } from "@/shared/context/WishlistContext";
-import { CompareProvider } from "@/shared/context/CompareContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -35,9 +34,7 @@ export default function RootLayout({
         <AuthProvider>
           <CartProvider>
             <WishlistProvider>
-              <CompareProvider>
-                {children}
-              </CompareProvider>
+              {children}
             </WishlistProvider>
           </CartProvider>
         </AuthProvider>

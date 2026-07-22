@@ -134,7 +134,7 @@ export default async function Home() {
               SHOP BY <span className="text-gold">CATEGORY</span>
             </h2>
           </div>
-          <Link href="/shop" className="text-[10px] font-extrabold uppercase tracking-widest text-gold hover:text-gold-hover transition-colors flex items-center gap-1.5 group">
+          <Link href="/categories" className="text-[10px] font-extrabold uppercase tracking-widest text-gold hover:text-gold-hover transition-colors flex items-center gap-1.5 group">
             View All Categories
             <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" />
           </Link>

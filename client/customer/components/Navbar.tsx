@@ -4,13 +4,12 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Search, ShoppingCart, User, Menu, Heart, ChevronDown, Hammer, Trash2, X, ArrowRight } from "lucide-react";
+import { Search, ShoppingCart, User, Menu, Heart, ChevronDown, Hammer, Trash2 } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 import { useCart } from "@/shared/context/CartContext";
 import { useAuth } from "@/shared/context/AuthContext";
 import { useWishlist } from "@/shared/context/WishlistContext";
-import { useCompare } from "@/shared/context/CompareContext";
-import { getCategories, Category, getInventoryByProduct } from "@/shared/lib/api";
+import { getCategories, Category } from "@/shared/lib/api";
 import TopBar from "@/customer/components/TopBar";
 import NavMenu from "@/customer/components/NavMenu";
 import AddToCartButton from "@/customer/components/AddToCartButton";
@@ -26,9 +25,8 @@ const ADMIN_ROLES = ["admin", "manager", "staff"];
 
 export default function Navbar() {
   const { itemCount } = useCart();
-  const { user, token } = useAuth();
+  const { user } = useAuth();
   const { wishlistItems, removeFromWishlist, wishlistCount } = useWishlist();
-  const { compareItems, removeFromCompare, clearCompare, compareCount } = useCompare();
   
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -38,7 +36,6 @@ export default function Navbar() {
   const [searchQuery, setSearchQuery] = useState(searchParams.get("search") || "");
   const [selectedCategory, setSelectedCategory] = useState(searchParams.get("category") || "");
   const [categoryDropdownOpen, setCategoryDropdownOpen] = useState(false);
-  const [isCompareOpen, setIsCompareOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
 
@@ -71,13 +68,6 @@ export default function Navbar() {
     if (selectedCategory) params.set("category", selectedCategory);
     router.push(`/shop?${params.toString()}`);
   };
-
-  // Get all unique specification keys across compared products
-  const uniqueSpecKeys = Array.from(
-    new Set(
-      compareItems.flatMap((item) => (item.specifications || []).map((s) => s.key))
-    )
-  );
 
   return (
     <>
@@ -364,205 +354,6 @@ export default function Navbar() {
         <NavMenu />
       </header>
 
-      {/* 4. Product Comparison Floating Bar */}
-      {mounted && compareCount > 0 && (
-        <div className="fixed bottom-6 right-6 z-50 bg-[#0c0c0c] border-2 border-gold/40 rounded-xl py-3.5 px-5 shadow-2xl shadow-black/80 flex items-center gap-6 max-w-lg md:max-w-xl animate-bounce-short">
-          <div className="flex items-center gap-3">
-            <span className="h-2 w-2 rounded-full bg-gold animate-ping" />
-            <p className="text-xs font-bold uppercase tracking-wider text-white">
-              Compare <span className="text-gold">List</span> ({compareCount}/4)
-            </p>
-          </div>
-
-          {/* Thumbnails of items */}
-          <div className="flex gap-2">
-            {compareItems.map((item) => (
-              <div
-                key={item._id}
-                className="relative h-10 w-10 bg-[#161616] border border-zinc-800 rounded overflow-hidden flex items-center justify-center group/item shrink-0"
-              >
-                {item.thumbnailUrl ? (
-                  <Image
-                    src={item.thumbnailUrl}
-                    alt={item.name}
-                    width={40}
-                    height={40}
-                    className="object-contain w-full h-full"
-                  />
-                ) : (
-                  <span className="text-[8px] text-zinc-600">No Image</span>
-                )}
-                <button
-                  onClick={() => removeFromCompare(item._id)}
-                  className="absolute inset-0 bg-black/80 flex items-center justify-center opacity-0 group-hover/item:opacity-100 transition-opacity duration-200 cursor-pointer"
-                >
-                  <X className="h-3.5 w-3.5 text-red-500 stroke-[3]" />
-                </button>
-              </div>
-            ))}
-          </div>
-
-          <div className="flex items-center gap-2.5">
-            <Button
-              onClick={() => setIsCompareOpen(true)}
-              className="bg-gold hover:bg-gold-hover text-black font-extrabold uppercase tracking-wider text-[10px] px-3.5 py-1.5 h-8 rounded"
-            >
-              Compare Now
-            </Button>
-            <button
-              onClick={clearCompare}
-              className="text-[10px] uppercase font-bold text-zinc-500 hover:text-zinc-200 tracking-wider bg-transparent border-0 cursor-pointer"
-            >
-              Clear
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Comparison Modal Overlay */}
-      {isCompareOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm">
-          <div className="bg-[#0b0b0b] border border-zinc-800 rounded-xl w-full max-w-4xl max-h-[85vh] flex flex-col shadow-2xl overflow-hidden">
-            <div className="flex justify-between items-center px-6 py-4 border-b border-zinc-900 bg-[#0e0e0e]">
-              <div>
-                <h3 className="text-sm font-extrabold uppercase tracking-widest text-white">
-                  Product <span className="text-gold">Comparison</span>
-                </h3>
-                <p className="text-[10px] text-zinc-500 uppercase tracking-wider mt-0.5">
-                  Comparing specifications side-by-side
-                </p>
-              </div>
-              <button
-                onClick={() => setIsCompareOpen(false)}
-                className="h-8 w-8 rounded-full bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white flex items-center justify-center transition-colors cursor-pointer border border-zinc-800"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-
-            <div className="flex-1 overflow-auto p-6">
-              {compareItems.length === 0 ? (
-                <div className="text-center py-20 text-zinc-500">
-                  No products added to compare.
-                </div>
-              ) : (
-                <div className="min-w-[600px] border border-zinc-900 rounded-lg overflow-hidden bg-[#0c0c0c]">
-                  <table className="w-full text-left border-collapse text-xs">
-                    <thead>
-                      <tr className="border-b border-zinc-900 bg-[#0f0f0f]">
-                        <th className="p-4 font-bold text-zinc-500 uppercase tracking-wider w-1/5">Specification</th>
-                        {compareItems.map((item) => (
-                          <th key={item._id} className="p-4 font-bold text-zinc-200 text-center w-1/4 border-l border-zinc-900">
-                            <div className="flex flex-col items-center gap-3">
-                              <div className="w-20 h-20 bg-[#161616] rounded flex items-center justify-center p-2 relative">
-                                {item.thumbnailUrl ? (
-                                  <Image
-                                    src={item.thumbnailUrl}
-                                    alt={item.name}
-                                    width={80}
-                                    height={80}
-                                    className="object-contain w-full h-full"
-                                  />
-                                ) : (
-                                  <span className="text-[9px] text-zinc-600">No Image</span>
-                                )}
-                                <button
-                                  onClick={() => removeFromCompare(item._id)}
-                                  className="absolute -top-1.5 -right-1.5 h-5 w-5 bg-red-600 hover:bg-red-700 text-white rounded-full flex items-center justify-center shadow-lg transition-colors cursor-pointer"
-                                >
-                                  <X className="h-3 w-3" />
-                                </button>
-                              </div>
-                              <span className="line-clamp-2 leading-tight uppercase font-extrabold tracking-wider text-[10px] hover:text-gold block max-w-[150px]">
-                                {item.name}
-                              </span>
-                            </div>
-                          </th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {/* Price Row */}
-                      <tr className="border-b border-zinc-900 hover:bg-zinc-900/10">
-                        <td className="p-4 font-bold text-zinc-400 uppercase tracking-wider">Price</td>
-                        {compareItems.map((item) => (
-                          <td key={item._id} className="p-4 text-center font-extrabold text-gold border-l border-zinc-900">
-                            AED {item.discountedPrice ?? item.sellingPrice}
-                            {item.discountedPrice && (
-                              <span className="block text-[10px] text-zinc-500 line-through font-normal mt-0.5">
-                                AED {item.sellingPrice}
-                              </span>
-                            )}
-                          </td>
-                        ))}
-                      </tr>
-
-                      {/* Brand Row */}
-                      <tr className="border-b border-zinc-900 hover:bg-zinc-900/10">
-                        <td className="p-4 font-bold text-zinc-400 uppercase tracking-wider">Brand</td>
-                        {compareItems.map((item) => (
-                          <td key={item._id} className="p-4 text-center text-zinc-300 font-semibold uppercase tracking-wider border-l border-zinc-900">
-                            {item.brand.name}
-                          </td>
-                        ))}
-                      </tr>
-
-                      {/* Category Row */}
-                      <tr className="border-b border-zinc-900 hover:bg-zinc-900/10">
-                        <td className="p-4 font-bold text-zinc-400 uppercase tracking-wider">Category</td>
-                        {compareItems.map((item) => (
-                          <td key={item._id} className="p-4 text-center text-zinc-300 font-semibold uppercase tracking-wider border-l border-zinc-900">
-                            {item.category.name}
-                          </td>
-                        ))}
-                      </tr>
-
-                      {/* SKU Row */}
-                      <tr className="border-b border-zinc-900 hover:bg-zinc-900/10">
-                        <td className="p-4 font-bold text-zinc-400 uppercase tracking-wider">SKU</td>
-                        {compareItems.map((item) => (
-                          <td key={item._id} className="p-4 text-center text-zinc-400 font-mono border-l border-zinc-900">
-                            {item.sku}
-                          </td>
-                        ))}
-                      </tr>
-
-                      {/* Unique Specs Rows */}
-                      {uniqueSpecKeys.map((key) => (
-                        <tr key={key} className="border-b border-zinc-900 hover:bg-zinc-900/10">
-                          <td className="p-4 font-bold text-zinc-400 uppercase tracking-wider">{key}</td>
-                          {compareItems.map((item) => {
-                            const val = (item.specifications || []).find((s) => s.key === key)?.value || "-";
-                            return (
-                              <td key={item._id} className="p-4 text-center text-zinc-300 font-semibold border-l border-zinc-900">
-                                {val}
-                              </td>
-                            );
-                          })}
-                        </tr>
-                      ))}
-
-                      {/* Actions Row */}
-                      <tr className="hover:bg-zinc-900/10">
-                        <td className="p-4 font-bold text-zinc-400 uppercase tracking-wider">Action</td>
-                        {compareItems.map((item) => (
-                          <td key={item._id} className="p-4 text-center border-l border-zinc-900">
-                            <AddToCartButton productId={item._id} />
-                            <Link href={`/products/${item.slug}`} onClick={() => setIsCompareOpen(false)} className="inline-flex items-center gap-1 text-[10px] font-bold text-gold hover:text-gold-hover uppercase tracking-widest mt-2">
-                              View Details
-                              <ArrowRight className="h-3 w-3" />
-                            </Link>
-                          </td>
-                        ))}
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
     </>
   );
 }
