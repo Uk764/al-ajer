@@ -48,9 +48,9 @@ export default function ProductDetailsClient({
     setActiveTab("description");
   }, [product]);
 
-  // Calculate stock status
-  const totalStock = inventory.reduce((sum, record) => sum + record.quantity, 0);
-  const isInStock = totalStock > 0;
+  // Calculate stock status from the product's database stock value
+  const stockQuantity = Number(product.stock ?? 0);
+  const isInStock = stockQuantity > 0;
 
   // Toggle wishlist / compare
   const isWishlisted = isInWishlist(product._id);

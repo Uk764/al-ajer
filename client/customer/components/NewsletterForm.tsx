@@ -22,6 +22,5 @@ export default function NewsletterForm() {
         Subscribe
       </Button>
     </form>
-    
   );
 }

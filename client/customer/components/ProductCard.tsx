@@ -33,6 +33,8 @@ export default function ProductCard({ product }: ProductCardProps) {
 
   const isWishlisted = isInWishlist(product._id);
   const isCompared = isInCompare(product._id);
+  const stockQuantity = Number(product.stock ?? 0);
+  const isInStock = stockQuantity > 0;
 
   // Deterministic ratings
   let hash = 0;
@@ -185,15 +187,20 @@ export default function ProductCard({ product }: ProductCardProps) {
                 AED {product.sellingPrice}
               </span>
             )}
+            <span className={`text-[9px] font-bold uppercase tracking-wider mt-1 block ${isInStock ? "text-green-500" : "text-red-500"}`}>
+              {isInStock ? "In Stock" : "Out of Stock"}
+            </span>
           </div>
 
           <button
             onClick={handleAddToCart}
-            disabled={isAdding}
-            className={`h-8 w-8 rounded flex items-center justify-center shrink-0 transition-all duration-300 cursor-pointer ${
-              added
-                ? "bg-green-600 text-white"
-                : "bg-gold hover:bg-gold-hover text-black active:scale-95 shadow-md shadow-gold/20"
+            disabled={isAdding || !isInStock}
+            className={`h-8 w-8 rounded flex items-center justify-center shrink-0 transition-all duration-300 ${
+              isInStock
+                ? added
+                  ? "bg-green-600 text-white cursor-default"
+                  : "bg-gold hover:bg-gold-hover text-black active:scale-95 shadow-md shadow-gold/20 cursor-pointer"
+                : "bg-zinc-800 text-zinc-500 cursor-not-allowed"
             }`}
           >
             {isAdding ? (

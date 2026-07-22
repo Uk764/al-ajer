@@ -35,6 +35,9 @@ const getProducts = async (req, res) => {
         if (req.query.brand) {
             filter.brand = req.query.brand;
         }
+        if (req.query.featured === 'true') {
+            filter.featured = true;
+        }
         if (req.query.minPrice || req.query.maxPrice) {
             filter.sellingPrice = {};
             if (req.query.minPrice)

@@ -4,7 +4,6 @@ import { Card, CardContent } from "@/shared/components/ui/card";
 import Link from "next/link";
 import Image from "next/image";
 import ProductCard from "@/customer/components/ProductCard";
-//import NewsletterForm from "@/customer/components/NewsletterForm";
 import {
   ShieldCheck,
   Wrench,
@@ -15,7 +14,6 @@ import {
   Hammer,
   Zap,
   ArrowRight,
-  Phone,
   Sparkles,
   Shield,
   Droplets,
@@ -47,8 +45,16 @@ const referenceCategories = [
 ];
 
 export default async function Home() {
-  const [productsData, categories] = await Promise.all([
-    getProducts({ limit: 10 }),
+  let featuredProductsData = null;
+  let featuredError = "";
+
+  try {
+    featuredProductsData = await getProducts({ limit: 8, featured: true });
+  } catch {
+    featuredError = "Featured products are temporarily unavailable.";
+  }
+
+  const [categories] = await Promise.all([
     getCategories(),
   ]);
 
@@ -93,13 +99,6 @@ export default async function Home() {
                   <ArrowRight className="ml-2 h-4 w-4 text-black stroke-3" />
                 </Button>
               </Link>
-
-              <a href="tel:+971558830854">
-                <Button variant="outline" className="border-2 border-zinc-800 hover:border-gold hover:bg-transparent text-white font-extrabold uppercase tracking-widest text-[10px] px-8 py-5 h-12 rounded transition-all duration-300 cursor-pointer gap-2">
-                  <Phone className="h-4 w-4 text-gold" />
-                  CONTACT SALES
-                </Button>
-              </a>
             </div>
           </div>
         </div>
@@ -181,11 +180,17 @@ export default async function Home() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
-          {productsData.products.map((product) => (
-            <ProductCard key={product._id} product={product} />
-          ))}
-        </div>
+        {featuredError ? (
+          <div className="text-center py-8 text-sm text-zinc-400">{featuredError}</div>
+        ) : featuredProductsData && featuredProductsData.products.length > 0 ? (
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
+            {featuredProductsData.products.map((product) => (
+              <ProductCard key={product._id} product={product} />
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-8 text-sm text-zinc-400">No featured products are available right now.</div>
+        )}
       </section>
 
       {/* 5. Top Brands Showcase */}

@@ -32,6 +32,9 @@ export const getProducts = async (req: Request, res: Response) => {
     if (req.query.brand) {
       filter.brand = req.query.brand;
     }
+    if (req.query.featured === 'true') {
+      filter.featured = true;
+    }
     if (req.query.minPrice || req.query.maxPrice) {
       filter.sellingPrice = {};
       if (req.query.minPrice) filter.sellingPrice.$gte = Number(req.query.minPrice);

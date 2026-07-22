@@ -17,11 +17,13 @@ export interface IProduct extends Document {
   costPrice: number;
   sellingPrice: number;
   discountedPrice: number | null;
+  stock: number;
   specifications: ISpecification[];
   images: string[];
   thumbnailUrl: string | null;
   unit: string;
   isActive: boolean;
+  featured: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -48,6 +50,7 @@ const productSchema = new Schema<IProduct>(
     costPrice: { type: Number, required: true, min: 0 },
     sellingPrice: { type: Number, required: true, min: 0 },
     discountedPrice: { type: Number, default: null, min: 0 },
+    stock: { type: Number, default: 0, min: 0 },
 
     specifications: { type: [specificationSchema], default: [] },
     images: { type: [String], default: [] },
@@ -55,6 +58,7 @@ const productSchema = new Schema<IProduct>(
 
     unit: { type: String, required: true, default: 'piece' },
     isActive: { type: Boolean, default: true },
+    featured: { type: Boolean, default: false },
   },
   { timestamps: true }
 );
@@ -64,6 +68,7 @@ productSchema.index({ name: 'text', description: 'text' }); // enables text sear
 productSchema.index({ category: 1 });
 productSchema.index({ brand: 1 });
 productSchema.index({ sellingPrice: 1 });
+productSchema.index({ featured: 1 });
 
 
 export default mongoose.model<IProduct>('Product', productSchema);

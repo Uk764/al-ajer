@@ -50,15 +50,18 @@ const productSchema = new mongoose_1.Schema({
     costPrice: { type: Number, required: true, min: 0 },
     sellingPrice: { type: Number, required: true, min: 0 },
     discountedPrice: { type: Number, default: null, min: 0 },
+    stock: { type: Number, default: 0, min: 0 },
     specifications: { type: [specificationSchema], default: [] },
     images: { type: [String], default: [] },
     thumbnailUrl: { type: String, default: null },
     unit: { type: String, required: true, default: 'piece' },
     isActive: { type: Boolean, default: true },
+    featured: { type: Boolean, default: false },
 }, { timestamps: true });
 // Indexes for fast search, filter, and sort at 15,000+ product scale
 productSchema.index({ name: 'text', description: 'text' }); // enables text search
 productSchema.index({ category: 1 });
 productSchema.index({ brand: 1 });
 productSchema.index({ sellingPrice: 1 });
+productSchema.index({ featured: 1 });
 exports.default = mongoose_1.default.model('Product', productSchema);

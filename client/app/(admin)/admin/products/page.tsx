@@ -50,6 +50,7 @@ export default function AdminProductsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [togglingFeaturedId, setTogglingFeaturedId] = useState<string | null>(null);
 
   // Filters
   const [searchQuery, setSearchQuery] = useState("");
@@ -75,11 +76,13 @@ export default function AdminProductsPage() {
     costPrice: 0,
     sellingPrice: 0,
     discountedPrice: "",
+    stock: 0,
     unit: "piece",
     thumbnailUrl: "",
     images: [] as string[],
     specifications: [] as { key: string; value: string }[],
     isActive: true,
+    featured: false,
   });
 
   // Spec helper state
@@ -148,11 +151,13 @@ export default function AdminProductsPage() {
       costPrice: 0,
       sellingPrice: 0,
       discountedPrice: "",
+      stock: 0,
       unit: "piece",
       thumbnailUrl: "",
       images: [],
       specifications: [],
       isActive: true,
+      featured: false,
     });
     setNewSpec({ key: "", value: "" });
     setError("");
@@ -172,11 +177,13 @@ export default function AdminProductsPage() {
       costPrice: product.costPrice || 0,
       sellingPrice: product.sellingPrice,
       discountedPrice: product.discountedPrice ? product.discountedPrice.toString() : "",
+      stock: product.stock ?? 0,
       unit: product.unit || "piece",
       thumbnailUrl: product.thumbnailUrl || "",
       images: product.images || [],
       specifications: product.specifications || [],
       isActive: product.isActive !== false,
+      featured: Boolean(product.featured),
     });
     setNewSpec({ key: "", value: "" });
     setError("");
@@ -271,11 +278,13 @@ export default function AdminProductsPage() {
         costPrice: Number(formData.costPrice),
         sellingPrice: Number(formData.sellingPrice),
         discountedPrice: formData.discountedPrice === "" ? null : Number(formData.discountedPrice),
+        stock: Number(formData.stock),
         unit: formData.unit,
         thumbnailUrl: formData.thumbnailUrl || null,
         images: formData.images,
         specifications: formData.specifications,
         isActive: formData.isActive,
+        featured: Boolean(formData.featured),
       };
 
       if (editingProduct) {
@@ -290,6 +299,26 @@ export default function AdminProductsPage() {
       fetchProducts();
     } catch (err: any) {
       setError(err.message || "Failed to save product.");
+    }
+  }
+
+  async function handleToggleFeatured(product: Product, featured: boolean) {
+    if (!token) return;
+
+    const previousProducts = products;
+    setProducts((prev) => prev.map((item) => (item._id === product._id ? { ...item, featured } : item)));
+    setTogglingFeaturedId(product._id);
+    setError("");
+    setSuccess("");
+
+    try {
+      await updateProduct(token, product._id, { featured });
+      setSuccess(`${product.name} ${featured ? "marked" : "removed"} as featured.`);
+    } catch (err: any) {
+      setProducts(previousProducts);
+      setError(err.message || "Failed to update featured status.");
+    } finally {
+      setTogglingFeaturedId(null);
     }
   }
 
@@ -431,7 +460,9 @@ export default function AdminProductsPage() {
                     <th className="py-3.5 px-4">Brand</th>
                     <th className="py-3.5 px-4">Cost Price</th>
                     <th className="py-3.5 px-4">Selling Price</th>
+                    <th className="py-3.5 px-4">Stock</th>
                     <th className="py-3.5 px-4">Status</th>
+                    <th className="py-3.5 px-4">Featured</th>
                     <th className="py-3.5 px-4 text-right">Actions</th>
                   </tr>
                 </thead>
@@ -479,9 +510,42 @@ export default function AdminProductsPage() {
                         )}
                       </td>
                       <td className="py-3 px-4">
+                        <div className="flex flex-col gap-1">
+                          <span className="font-semibold text-white">{product.stock ?? 0}</span>
+                          <Badge
+                            variant={
+                              Number(product.stock ?? 0) === 0
+                                ? "destructive"
+                                : Number(product.stock ?? 0) < 10
+                                  ? "secondary"
+                                  : "default"
+                            }
+                            className="w-fit"
+                          >
+                            {Number(product.stock ?? 0) === 0
+                              ? "Out of Stock"
+                              : Number(product.stock ?? 0) < 10
+                                ? "Low Stock"
+                                : "In Stock"}
+                          </Badge>
+                        </div>
+                      </td>
+                      <td className="py-3 px-4">
                         <Badge variant={product.isActive !== false ? "default" : "secondary"}>
                           {product.isActive !== false ? "Active" : "Inactive"}
                         </Badge>
+                      </td>
+                      <td className="py-3 px-4">
+                        <label className="flex items-center gap-2 text-xs text-muted-foreground">
+                          <input
+                            type="checkbox"
+                            checked={Boolean(product.featured)}
+                            disabled={togglingFeaturedId === product._id}
+                            onChange={(e) => handleToggleFeatured(product, e.target.checked)}
+                            className="h-4 w-4 rounded border-gray-300 text-primary"
+                          />
+                          {togglingFeaturedId === product._id ? "Updating..." : Boolean(product.featured) ? "Yes" : "No"}
+                        </label>
                       </td>
                       <td className="py-3 px-4 text-right">
                         <div className="flex justify-end gap-1.5">
@@ -635,7 +699,7 @@ export default function AdminProductsPage() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-4 gap-3">
                   <div className="space-y-1.5">
                     <Label htmlFor="costPrice">Cost Price (AED)</Label>
                     <Input
@@ -670,6 +734,18 @@ export default function AdminProductsPage() {
                       value={formData.discountedPrice}
                       onChange={(e) => setFormData((p) => ({ ...p, discountedPrice: e.target.value }))}
                       placeholder="None"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="stock">Stock Quantity</Label>
+                    <Input
+                      type="number"
+                      id="stock"
+                      min="0"
+                      step="1"
+                      value={formData.stock}
+                      onChange={(e) => setFormData((p) => ({ ...p, stock: Number(e.target.value) }))}
+                      required
                     />
                   </div>
                 </div>
@@ -806,6 +882,16 @@ export default function AdminProductsPage() {
                     className="h-4 w-4 rounded border-gray-300 text-primary"
                   />
                   <Label htmlFor="isActive" className="cursor-pointer">Active in Catalog (Visible to clients)</Label>
+                </div>
+                <div className="flex items-center gap-2 pt-2">
+                  <input
+                    type="checkbox"
+                    id="featured"
+                    checked={Boolean(formData.featured)}
+                    onChange={(e) => setFormData((p) => ({ ...p, featured: e.target.checked }))}
+                    className="h-4 w-4 rounded border-gray-300 text-primary"
+                  />
+                  <Label htmlFor="featured" className="cursor-pointer">Featured Product (Shown on homepage)</Label>
                 </div>
               </div>
               <div className="p-4 border-t border-border flex justify-end gap-2 bg-secondary/20">

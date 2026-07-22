@@ -10,11 +10,13 @@ export interface Product {
   sellingPrice: number;
   costPrice?: number;
   discountedPrice: number | null;
+  stock?: number;
   thumbnailUrl: string | null;
   images: string[];
   unit: string;
   specifications: { key: string; value: string }[];
   isActive?: boolean;
+  featured?: boolean;
   createdAt: string;
   category: { _id: string; name: string; slug: string };
   brand: { _id: string; name: string; slug: string; logoUrl?: string | null };
@@ -42,6 +44,7 @@ export async function getProducts(params?: {
   inStock?: boolean;
   onSale?: boolean;
   all?: boolean;
+  featured?: boolean;
 }): Promise<ProductsResponse> {
   const query = new URLSearchParams();
   if (params?.limit) query.set("limit", params.limit.toString());
@@ -55,6 +58,7 @@ export async function getProducts(params?: {
   if (params?.inStock) query.set("inStock", "true");
   if (params?.onSale) query.set("onSale", "true");
   if (params?.all) query.set("all", "true");
+  if (params?.featured) query.set("featured", "true");
 
   const res = await fetch(`${API_BASE_URL}/products?${query.toString()}`, {
     cache: "no-store",
@@ -787,4 +791,4 @@ export async function deleteInquiry(token: string, id: string): Promise<{ messag
   }
   return res.json();
 }
-
+
